@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https:; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Sirb Ai — أنشئ صورك بالذكاء الاصطناعي. SMARTER TOGETHER">
+  <title>Sirb Ai — تسجيل الدخول</title>
+  <link rel="icon" type="image/png" href="../img/fav.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../core/core.css">
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع">
+    <span class="sun">☀</span><span class="moon">☾</span>
+  </button>
+
+  <main class="layout">
+    <section class="hero">
+      <div class="brand">
+        <img src="../img/logo.png" alt="Sirb Ai" class="brand-logo">
+        <div>
+          <h1 class="brand-name en">SIRB <span>Ai</span></h1>
+          <p class="brand-tag en">SMARTER TOGETHER</p>
+        </div>
+      </div>
+      <div class="phrase-box" aria-live="polite"><p id="phrase" class="phrase"></p></div>
+    </section>
+
+    <section class="card" aria-label="الحساب">
+      <div class="logo-ring"><img src="../img/logo.png" alt=""></div>
+
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" role="tab" data-tab="login" aria-selected="true">تسجيل الدخول</button>
+        <button type="button" class="tab" role="tab" data-tab="signup" aria-selected="false">إنشاء حساب</button>
+        <span class="tab-indicator" id="tabIndicator"></span>
+      </div>
+
+      <form id="loginForm" class="form active" novalidate autocomplete="on">
+        <label class="field">
+          <span>البريد الإلكتروني</span>
+          <input type="email" name="email" maxlength="254" autocomplete="email" dir="ltr" required>
+          <small class="err"></small>
+        </label>
+        <label class="field">
+          <span>كلمة المرور</span>
+          <div class="pass-wrap">
+            <input type="password" name="password" maxlength="128" autocomplete="current-password" dir="ltr" required>
+            <button type="button" class="eye" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+          <small class="err"></small>
+        </label>
+        <button type="submit" class="btn">دخول</button>
+        <p class="msg" role="alert"></p>
+      </form>
+
+      <form id="signupForm" class="form" novalidate autocomplete="on">
+        <label class="field">
+          <span>الاسم</span>
+          <input type="text" name="name" maxlength="50" autocomplete="name" required>
+          <small class="err"></small>
+        </label>
+        <label class="field">
+          <span>البريد الإلكتروني</span>
+          <input type="email" name="email" maxlength="254" autocomplete="email" dir="ltr" required>
+          <small class="hint">Gmail, Outlook, Hotmail, Yahoo, iCloud, Proton ...</small>
+          <small class="err"></small>
+        </label>
+        <label class="field">
+          <span>كود التحقق</span>
+          <div class="code-wrap">
+            <input type="text" name="code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" dir="ltr" class="en code-input" placeholder="••••••" required>
+            <button type="button" class="send-code" id="sendCode">إرسال الكود</button>
+          </div>
+          <small class="err"></small>
+        </label>
+        <label class="field">
+          <span>كلمة المرور</span>
+          <div class="pass-wrap">
+            <input type="password" name="password" maxlength="128" autocomplete="new-password" dir="ltr" required>
+            <button type="button" class="eye" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+          <div class="meter"><i id="meterBar"></i></div>
+          <small class="err"></small>
+        </label>
+        <label class="field">
+          <span>كود الدعوة <em>(اختياري)</em></span>
+          <input type="text" name="invite" maxlength="8" autocomplete="off" dir="ltr" class="en upper">
+          <small class="err"></small>
+        </label>
+        <label class="agree">
+          <input type="checkbox" name="terms" required>
+          <span>أوافق على <a href="../terms/index.html?from=one" class="link">شروط الاستخدام وسياسة الخصوصية</a></span>
+        </label>
+        <small class="err agree-err"></small>
+        <button type="submit" class="btn">إنشاء الحساب</button>
+        <p class="msg" role="alert"></p>
+      </form>
+      <p class="legal"><a href="../terms/index.html?from=one" class="link">شروط الاستخدام والخصوصية</a></p>
+    </section>
+  </main>
+
+  <script src="../core/config.js"></script>
+  <script src="../core/core.js"></script>
+  <script src="one.js"></script>
+</body>
+</html>

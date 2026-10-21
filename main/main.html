@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https:; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>Sirb Ai — الرئيسية</title>
+  <link rel="icon" type="image/png" href="../img/fav.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="../core/core.css">
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع">
+    <span class="sun">☀</span><span class="moon">☾</span>
+  </button>
+  <div class="page-center">
+    <section class="card" id="mainCard" hidden>
+      <div class="logo-ring"><img src="../img/logo.png" alt=""></div>
+      <h2>أهلاً <span id="userName"></span></h2>
+      <p>الصفحة الرئيسية قيد الإنشاء 🚧</p>
+      <p>كود الدعوة الخاص بك</p>
+      <div class="code-box"><code id="inviteCode" dir="ltr"></code></div>
+      <button type="button" class="btn" id="copyLink">نسخ رابط الدعوة</button>
+      <button type="button" class="btn ghost" id="logoutBtn">تسجيل الخروج</button>
+      <p class="msg" id="mainMsg"></p>
+      <p class="legal"><a href="../terms/index.html?from=main" class="link">شروط الاستخدام والخصوصية</a></p>
+    </section>
+  </div>
+  <script src="../core/config.js"></script>
+  <script src="../core/core.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
