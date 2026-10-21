@@ -1,23 +1,29 @@
-(() => {
-const KEY = "sirb-theme";
-const root = document.documentElement;
-let theme = null;
-try {
-theme = localStorage.getItem(KEY);
-} catch (e) {
-theme = null;
-}
-if (theme !== "light" && theme !== "dark") theme = "dark";
-root.setAttribute("data-theme", theme);
-document.addEventListener("DOMContentLoaded", () => {
-const btn = document.getElementById("themeBtn");
-if (!btn) return;
-btn.addEventListener("click", () => {
-theme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-root.setAttribute("data-theme", theme);
-try {
-localStorage.setItem(KEY, theme);
-} catch (e) {}
-});
-});
+(function () {
+  'use strict';
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const y = document.getElementById('year');
+    if (y) y.textContent = String(new Date().getFullYear());
+
+    const nav = document.getElementById('nav');
+    const onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 10); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    const items = Array.from(document.querySelectorAll('.reveal'));
+    if (!('IntersectionObserver' in window)) { items.forEach(function (el) { el.classList.add('in'); }); return; }
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    items.forEach(function (el) { io.observe(el); });
+  });
 })();
+document.addEventListener('sirb:session', function (ev) {
+  if (!ev.detail) return;
+  document.querySelectorAll('a[href^="log/one.html"]').forEach(function (a) {
+    a.setAttribute('href', 'main/main.html');
+    if (a.classList.contains('small')) a.textContent = 'حسابي';
+  });
+});

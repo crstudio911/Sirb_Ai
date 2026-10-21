@@ -18,7 +18,7 @@
   }
 
   async function api(path, body) {
-    if (!API || !/^https:\/\//.test(API)) throw new Error('config');
+    if (!API || !/^https:\/\//.test(API) || /YOUR-WORKER/i.test(API)) throw new Error('config');
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 20000);
     try {
@@ -28,7 +28,7 @@
         credentials: 'include',
         cache: 'no-store',
         referrerPolicy: 'no-referrer',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Sirb': '1' },
         body: JSON.stringify(body || {}),
         signal: ctrl.signal
       });
@@ -40,7 +40,44 @@
     }
   }
 
-  window.SirbApi = Object.freeze({ api, initTheme });
+  const KEY = 'sirb-user';
+  function cached() {
+    try { const u = JSON.parse(sessionStorage.getItem(KEY) || 'null'); return u && typeof u.name === 'string' ? u : null; } catch (e) { return null; }
+  }
+  function store(u) {
+    try { u ? sessionStorage.setItem(KEY, JSON.stringify({ name: u.name, inviteCode: u.inviteCode })) : sessionStorage.removeItem(KEY); } catch (e) {}
+  }
+  let pending = null;
+  function session(force) {
+    if (pending && !force) return pending;
+    pending = (async () => {
+      try {
+        const r = await api('/me', {});
+        const u = r.data && r.data.ok ? r.data.user : null;
+        store(u);
+        return u;
+      } catch (e) {
+        return e && e.message === 'config' ? null : cached();
+      }
+    })();
+    return pending;
+  }
+  async function logout() {
+    try { await api('/logout', {}); } catch (e) {}
+    store(null);
+  }
+  function applyAuth(u) {
+    document.documentElement.dataset.auth = u ? 'in' : 'out';
+    document.querySelectorAll('[data-user-name]').forEach(el => { el.textContent = u ? u.name : ''; });
+    document.dispatchEvent(new CustomEvent('sirb:session', { detail: u }));
+  }
 
-  document.addEventListener('DOMContentLoaded', initTheme);
+  window.SirbApi = Object.freeze({ api, initTheme, session, logout, cached, configured: () => !!API && !/YOUR-WORKER/i.test(API) });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initTheme();
+    const c = cached();
+    if (c) document.documentElement.dataset.auth = 'in';
+    session().then(applyAuth);
+  });
 })();

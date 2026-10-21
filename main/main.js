@@ -2,12 +2,10 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', async function () {
-    const { api } = window.SirbApi;
-    let r;
-    try { r = await api('/me', {}); } catch (e) { r = null; }
-    if (!r || !r.data.ok) { location.replace('../log/one.html'); return; }
+    const { session, logout } = window.SirbApi;
+    const user = await session();
+    if (!user) { location.replace('../log/one.html'); return; }
 
-    const user = r.data.user;
     document.getElementById('userName').textContent = user.name;
     document.getElementById('inviteCode').textContent = user.inviteCode;
     document.getElementById('mainCard').hidden = false;
@@ -27,7 +25,7 @@
     });
 
     document.getElementById('logoutBtn').addEventListener('click', async function () {
-      try { await api('/logout', {}); } catch (e) {}
+      await logout();
       location.replace('../log/one.html');
     });
   });

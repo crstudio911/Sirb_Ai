@@ -27,20 +27,19 @@
     mail_config: 'خدمة البريد غير مُعدّة بعد',
     busy: 'الخادم مشغول، حاول مرة أخرى',
     network: 'تعذر الاتصال بالخادم',
+    config: 'لم يتم ضبط رابط الخادم بعد في core/config.js',
     default: 'حدث خطأ، حاول مرة أخرى'
   };
 
   const PHRASES = [
-    'أنشئ *صورك* بلمسة من ^الخيال^',
-    'الذكاء ~الاصطناعي~ بين يديك',
-    'فكرتك + *Sirb Ai* = ~إبداع~',
-    'من الكلمات إلى *لوحات* مذهلة',
-    'اكتب، تخيّل، ثم ~أبدع~',
-    '*SMARTER* TOGETHER',
-    'صورة واحدة ^تساوي^ ألف *فكرة*',
-    'إبداع بلا ~حدود~',
-    'ادعُ أصدقاءك و*ابدعوا* معاً',
-    'المستقبل يبدأ ^من^ *هنا*'
+    'كل شيء يبدأ بـ*خطوة*',
+    'فقط قم ب^تسجيل الدخول^',
+    'أهلاً بك في *عالمك* الخاص',
+    'ابدأ ~الإبداع~ الآن و*مجاناً*',
+    'نحن هنا ^لأجلك^',
+    'ابدأ *الآن*',
+    'نحن *نقدّر* مجهودك',
+    'قاوم هواك تبلغ ~عُلاك~'
   ];
 
   const $ = (s, r) => (r || document).querySelector(s);
@@ -91,7 +90,9 @@
       $('#loginForm').classList.toggle('active', name === 'login');
       $('#signupForm').classList.toggle('active', name === 'signup');
     }
-    const invite = new URLSearchParams(location.search).get('invite');
+    const q = new URLSearchParams(location.search);
+    if (q.get('tab') === 'signup') setTab('signup');
+    const invite = q.get('invite');
     if (invite && RE_INVITE.test(invite.toUpperCase())) {
       $('#signupForm [name=invite]').value = invite.toUpperCase();
       setTab('signup');
@@ -173,7 +174,7 @@
         }
         setMsg(form, ERRORS[r.data.error] || ERRORS.default, 'error');
       } catch (err) {
-        setMsg(form, ERRORS.network, 'error');
+        setMsg(form, err && err.message === 'config' ? ERRORS.config : ERRORS.network, 'error');
       }
       lock(form, false);
     });
@@ -215,7 +216,7 @@
         setMsg(form, ERRORS[key] || ERRORS.default, 'error');
         if (key === 'otp_wait') { countdown(60); return; }
       } catch (err) {
-        setMsg(form, ERRORS.network, 'error');
+        setMsg(form, err && err.message === 'config' ? ERRORS.config : ERRORS.network, 'error');
       }
       btn.disabled = false;
       btn.textContent = 'إرسال الكود';
@@ -257,7 +258,7 @@
         if (key === 'code_invalid' || key === 'code_expired') setErr(form, 'code', ERRORS[key]);
         setMsg(form, ERRORS[key] || ERRORS.default, 'error');
       } catch (err) {
-        setMsg(form, ERRORS.network, 'error');
+        setMsg(form, err && err.message === 'config' ? ERRORS.config : ERRORS.network, 'error');
       }
       lock(form, false);
       if (resendLeft > 0) $('#sendCode').disabled = true;
@@ -266,8 +267,7 @@
 
   async function redirectIfLogged() {
     try {
-      const r = await api('/me', {});
-      if (r.data.ok) location.replace('../main/main.html');
+      if (await window.SirbApi.session()) location.replace('../main/main.html');
     } catch (e) {}
   }
 
