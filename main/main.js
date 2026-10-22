@@ -29,11 +29,11 @@
     toastT = setTimeout(() => el.classList.remove('show'), 2400);
   }
 
-  function svg(name) {
+  function svg(name, raw) {
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     s.setAttribute('class', 'ic');
     const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-    u.setAttribute('href', '#i-' + name);
+    u.setAttribute('href', '#' + (raw ? name : 'i-' + name));
     s.append(u);
     return s;
   }
@@ -103,16 +103,42 @@
 
     let chatId = null;
 
+    const ago = t => {
+      const d = Math.floor((Date.now() - t) / 60000);
+      if (d < 1) return 'الآن';
+      if (d < 60) return 'منذ ' + d + ' د';
+      if (d < 1440) return 'منذ ' + Math.floor(d / 60) + ' س';
+      if (d < 2880) return 'أمس';
+      return new Date(t).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
+    };
+    let filter = '';
     async function renderChats() {
       const list = $('chatList');
-      const chats = await S.chats();
+      const [chats, imgs] = await Promise.all([S.chats(), S.allImages()]);
+      const count = new Map();
+      imgs.forEach(i => count.set(i.chatId, (count.get(i.chatId) || 0) + 1));
+      const q = filter.trim().toLowerCase();
+      const shown = q ? chats.filter(c => c.title.toLowerCase().includes(q) || imgs.some(i => i.chatId === c.id && String(i.prompt).toLowerCase().includes(q))) : chats;
       list.textContent = '';
-      chats.forEach(c => {
+      if (!shown.length) list.append(el('span', 'chat-none', chats.length ? 'مفيش نتايج' : 'السجل فاضي'));
+      shown.forEach(c => {
         const b = el('a', 'chat-item' + (c.id === chatId ? ' active' : ''));
         b.href = '#studio/' + c.id;
-        b.append(svg('history'), el('span', '', c.title));
-        const x = el('button', 'chat-del');
-        x.type = 'button'; x.setAttribute('aria-label', 'حذف المحادثة'); x.textContent = '×';
+        const txt = el('span', 'chat-txt');
+        txt.append(el('b', '', c.title), el('small', '', (count.get(c.id) || 0) + ' صورة · ' + ago(c.updated)));
+        b.append(svg('history'), txt);
+        const r = el('button', 'chat-act');
+        r.type = 'button'; r.setAttribute('aria-label', 'إعادة تسمية'); r.append(svg('prompt'));
+        r.addEventListener('click', async e => {
+          e.preventDefault(); e.stopPropagation();
+          const n = (window.prompt('اسم المحادثة', c.title) || '').trim();
+          if (!n || n === c.title) return;
+          await S.touchChat(c.id, n);
+          renderChats();
+          if (c.id === chatId) $('chatTitle').textContent = n.slice(0, 60);
+        });
+        const x = el('button', 'chat-act del');
+        x.type = 'button'; x.setAttribute('aria-label', 'حذف المحادثة'); x.append(svg('trash'));
         x.addEventListener('click', async e => {
           e.preventDefault(); e.stopPropagation();
           if (!confirm('حذف المحادثة "' + c.title + '" وكل صورها؟')) return;
@@ -120,7 +146,7 @@
           if (chatId === c.id) location.hash = '#studio';
           else renderChats();
         });
-        b.append(x);
+        b.append(r, x);
         list.append(b);
       });
       return chats;
@@ -209,14 +235,59 @@
 
     const prompt = $('prompt');
     prompt.addEventListener('input', () => { $('count').textContent = prompt.value.length + ' / 1000'; });
-    let style = '', styleName = '';
-    $('styles').addEventListener('click', e => {
-      const b = e.target.closest('.pill');
-      if (!b) return;
-      document.querySelectorAll('#styles .pill').forEach(p => p.classList.toggle('active', p === b));
-      style = b.dataset.style || '';
-      styleName = style ? b.textContent : '';
-    });
+    const P = window.SirbPresets;
+    let CATS = P.CATS;
+    let cat = CATS[0];
+    const picked = new Map();
+    function renderOpts() {
+      const box = $('opts');
+      box.textContent = '';
+      cat.groups.forEach((g, gi) => {
+        const f = el('div', 'field');
+        f.append(el('span', 'opt-name', g.name));
+        const row = el('div', 'styles');
+        g.opts.forEach(([label, en], oi) => {
+          const key = gi + ':' + oi;
+          const b = el('button', 'pill' + (picked.get(gi) === key ? ' active' : ''), label);
+          b.type = 'button';
+          b.addEventListener('click', () => {
+            if (picked.get(gi) === key) picked.delete(gi); else picked.set(gi, key);
+            renderOpts();
+          });
+          row.append(b);
+        });
+        f.append(row);
+        box.append(f);
+      });
+    }
+    function renderCats() {
+      const box = $('cats');
+      box.textContent = '';
+      CATS.forEach(c => {
+        const b = el('button', 'cat' + (c === cat ? ' active' : ''));
+        b.type = 'button';
+        const ic = svg(document.getElementById('c-' + c.icon) ? 'c-' + c.icon : 'c-free', true);
+        b.append(ic, el('span', '', c.name));
+        b.addEventListener('click', () => { cat = c; picked.clear(); renderCats(); renderOpts(); });
+        box.append(b);
+      });
+    }
+    renderCats(); renderOpts();
+    api('/presets', {}).then(r => {
+      if (!r.data || !r.data.ok || !Array.isArray(r.data.cats) || !r.data.cats.length) return;
+      CATS = r.data.cats.filter(c => c && Array.isArray(c.groups));
+      if (!CATS.length) { CATS = P.CATS; return; }
+      cat = CATS.find(c => c.id === cat.id) || CATS[0];
+      picked.clear(); renderCats(); renderOpts();
+    }).catch(() => {});
+    function extra() {
+      const parts = cat.base ? [cat.base] : [];
+      const names = [];
+      picked.forEach(key => { const [gi, oi] = key.split(':').map(Number); const o = cat.groups[gi].opts[oi]; parts.push(o[1]); names.push(o[0]); });
+      if (parts.length) parts.push(P.NOTE);
+      return { text: parts.join(', '), names: [cat.id !== 'free' ? cat.name : ''].concat(names).filter(Boolean).join(' · ') };
+    }
+    $('chatSearch').addEventListener('input', e => { filter = e.target.value; renderChats(); });
 
     let busy = false;
     $('genForm').addEventListener('submit', async e => {
@@ -228,8 +299,10 @@
       busy = true;
       msg.textContent = ''; msg.className = 'msg';
       $('genBtn').disabled = true; $('loading').hidden = false;
+      const ex = extra();
+      const style = ex.text, styleName = ex.names;
       try {
-        const r = await api('/generate', { prompt: style ? text + ', ' + style : text });
+        const r = await api('/generate', { prompt: text, extra: style });
         if (r.status === 401) { location.replace('../log/one.html'); return; }
         if (!r.data || !r.data.ok || typeof r.data.image !== 'string' || !r.data.image.startsWith('data:image/')) { if (r.data && r.data.reason) console.error('Sirb generate:', r.data.reason); throw new Error((r.data && r.data.error) || 'ai_failed'); }
         let id = chatId;
