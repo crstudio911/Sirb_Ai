@@ -130,6 +130,12 @@
 .turn-acts { position: absolute; bottom: 22px; left: 22px; display: flex; gap: 8px; }
 .loading-bar { position: relative; overflow: hidden; padding: 12px; border-radius: 12px; border: 1px dashed var(--primary); color: var(--primary); font-weight: 700; text-align: center; }
 .loading-bar[hidden] { display: none; }
+.load-text { position: relative; display: block; animation: fadeUp .3s ease; }
+.load-steps { position: relative; display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.load-steps i { width: 7px; height: 7px; transform: rotate(45deg); border: 1px solid var(--primary); opacity: .35; transition: opacity .3s, background .3s; }
+.load-steps i.on { background: var(--primary); opacity: 1; }
+.load-track { position: relative; display: block; height: 3px; margin-top: 10px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.load-fill { display: block; height: 100%; width: 0; background: var(--primary); transition: width .6s ease; }
 .loading-bar .scan { position: absolute; inset: 0; height: auto; background: linear-gradient(90deg, transparent, var(--glow), transparent); animation: sweep 1.4s linear infinite; }
 @keyframes sweep { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 

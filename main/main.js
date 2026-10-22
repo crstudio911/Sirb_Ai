@@ -11,6 +11,7 @@
     day_limit: 'خلصت صور النهارده في خطتك، رقّي لـ Pro أو استنى لبكرة',
     server: 'الخادم مشغول، جرب تاني',
     ai_failed: 'حصلت مشكلة في الإنشاء، جرب تاني',
+    ai_quota: 'خدمة الرسم وصلت لحدها اليومي، جرب تاني بعد شوية. الصورة دي مش محسوبة عليك',
     ai_config: 'خدمة الإنشاء لسه مش متظبطة',
     config: 'رابط الخادم لم يُضبط بعد',
     storage: 'المتصفح منع حفظ الصورة على الجهاز'
@@ -289,6 +290,21 @@
     }
     $('chatSearch').addEventListener('input', e => { filter = e.target.value; renderChats(); });
 
+    const STAGES = [[0, 'جاري الإعداد...'], [1500, 'جاري ترجمة وفهم الوصف...'], [4500, 'جاري رسم الصورة...'], [10000, 'جاري العمل على التفاصيل...'], [18000, 'جاري إضافة اللمسات الأخيرة...'], [30000, 'قربنا نخلص، ثواني...']];
+    let stageT = [];
+    function stages(on) {
+      stageT.forEach(clearTimeout); stageT = [];
+      const dots = $('loadSteps').children;
+      const set = (i, t) => {
+        const lt = $('loadText');
+        lt.textContent = t; lt.style.animation = 'none'; void lt.offsetWidth; lt.style.animation = '';
+        [...dots].forEach((d, k) => d.classList.toggle('on', k <= Math.min(i, dots.length - 1)));
+        $('loadFill').style.width = Math.min(92, 8 + i * 17) + '%';
+      };
+      if (!on) { $('loadFill').style.width = '100%'; return; }
+      STAGES.forEach(([ms, t], i) => stageT.push(setTimeout(() => set(i, t), ms)));
+    }
+
     let busy = false;
     $('genForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -298,7 +314,7 @@
       if (text.length < 3) { msg.textContent = ERR.prompt_short; msg.className = 'msg error'; prompt.focus(); return; }
       busy = true;
       msg.textContent = ''; msg.className = 'msg';
-      $('genBtn').disabled = true; $('loading').hidden = false;
+      $('genBtn').disabled = true; $('loading').hidden = false; stages(true);
       const ex = extra();
       const style = ex.text, styleName = ex.names;
       try {
@@ -321,7 +337,7 @@
         msg.className = 'msg error';
       } finally {
         busy = false;
-        $('genBtn').disabled = false; $('loading').hidden = true;
+        stages(false); $('genBtn').disabled = false; $('loading').hidden = true;
       }
     });
   });
