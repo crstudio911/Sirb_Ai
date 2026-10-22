@@ -77,7 +77,7 @@
       return all.sort((a, b) => b.t - a.t);
     },
     async addImage(chatId, dataUrl, meta) {
-      const item = { id: uid(), chatId, blob: dataToBlob(dataUrl), prompt: meta.prompt, style: meta.style || '', styleName: meta.styleName || '', steps: meta.steps, seed: meta.seed, t: Date.now() };
+      const item = { id: uid(), chatId, blob: dataToBlob(dataUrl), prompt: meta.prompt, style: meta.style || '', styleName: meta.styleName || '', model: meta.model || '', seed: meta.seed, t: Date.now() };
       await tx('images', 'readwrite', s => req(s.put(item)));
       return item;
     },

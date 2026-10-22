@@ -7,7 +7,9 @@
   const ERR = {
     unauthorized: 'انتهت الجلسة، سجل الدخول مرة أخرى',
     prompt_short: 'اكتب وصف أطول شوية',
-    gen_rate: 'استنى دقيقة وجرب تاني',
+    gen_rate: 'وصلت لحد الصور في الدقيقة، استنى شوية وجرب تاني',
+    day_limit: 'خلصت صور النهارده في خطتك، رقّي لـ Pro أو استنى لبكرة',
+    server: 'الخادم مشغول، جرب تاني',
     ai_failed: 'حصلت مشكلة في الإنشاء، جرب تاني',
     ai_config: 'خدمة الإنشاء لسه مش متظبطة',
     config: 'رابط الخادم لم يُضبط بعد',
@@ -68,6 +70,35 @@
     $('uCode').textContent = user.inviteCode;
     $('pCode').textContent = user.inviteCode;
     document.querySelectorAll('[data-user-name]').forEach(e => { e.textContent = user.name; });
+    document.querySelectorAll('[data-plan-name]').forEach(e => { e.textContent = user.planName || 'Free'; e.classList.toggle('pro', (user.plan || 'free') !== 'free'); });
+    function usage() {
+      const used = Number(user.usedToday) || 0, max = Number(user.perDay) || 0;
+      $('useVal').textContent = max ? used + ' / ' + max : String(used);
+      $('useBar').style.width = max ? Math.min(100, used / max * 100) + '%' : '0%';
+      $('useNote').textContent = max ? 'باقي ' + Math.max(0, max - used) + ' صورة النهارده، والعداد بيتجدد كل يوم.' : 'بدون حد يومي.';
+      $('quota').textContent = max ? 'باقي ' + Math.max(0, max - used) + ' اليوم' : '';
+    }
+    usage();
+    api('/plans', {}).then(r => {
+      const box = $('plans');
+      if (!r.data || !r.data.ok || !Array.isArray(r.data.plans)) return;
+      box.textContent = '';
+      r.data.plans.forEach(p => {
+        const cur = p.id === (user.plan || 'free');
+        const card = el('article', 'plan-box' + (p.highlight ? ' hot' : '') + (cur ? ' current' : ''));
+        const head = el('div', 'plan-top');
+        head.append(svg(p.id === 'free' ? 'spark' : 'crown'), el('h3', 'en', p.name));
+        if (p.highlight) head.append(el('span', 'tag', 'الأفضل'));
+        const price = el('p', 'price');
+        price.append(el('strong', 'en', p.price ? String(p.price) : '0'), el('span', 'en', ' ' + p.currency), el('em', '', p.period ? ' / ' + p.period : ''));
+        const ul = el('ul', 'checks');
+        p.features.forEach(t => { const li = el('li'); li.append(svg('check'), el('span', '', t)); ul.append(li); });
+        const btn = el('button', 'btn' + (cur ? ' ghost' : ''), cur ? 'خطتك الحالية' : 'الترقية قريباً');
+        btn.type = 'button'; btn.disabled = true;
+        card.append(head, price, ul, btn);
+        box.append(card);
+      });
+    }).catch(() => {});
     $('shell').hidden = false;
 
     let chatId = null;
@@ -109,7 +140,7 @@
     function turn(i) {
       const t = el('article', 'turn');
       const q = el('p', 'turn-prompt', i.prompt);
-      const meta = el('span', 'turn-meta', (i.styleName ? i.styleName + ' · ' : '') + 'دقة ' + i.steps + ' · ' + fmt(i.t));
+      const meta = el('span', 'turn-meta', (i.styleName ? i.styleName + ' · ' : '') + fmt(i.t));
       const im = el('img'); im.src = urlOf(i); im.alt = i.prompt; im.loading = 'lazy';
       const acts = el('div', 'turn-acts');
       const d = el('button', 'icon-btn'); d.type = 'button'; d.setAttribute('aria-label', 'تحميل'); d.append(svg('download'));
@@ -176,9 +207,8 @@
     $('logoutBtn').addEventListener('click', async () => { await logout(); location.replace('../log/one.html'); });
     $('newChat').addEventListener('click', () => { chatId = null; location.hash = '#studio'; show(); $('prompt').focus(); });
 
-    const prompt = $('prompt'), steps = $('steps');
+    const prompt = $('prompt');
     prompt.addEventListener('input', () => { $('count').textContent = prompt.value.length + ' / 1000'; });
-    steps.addEventListener('input', () => { $('stepsVal').textContent = steps.value; });
     let style = '', styleName = '';
     $('styles').addEventListener('click', e => {
       const b = e.target.closest('.pill');
@@ -199,16 +229,17 @@
       msg.textContent = ''; msg.className = 'msg';
       $('genBtn').disabled = true; $('loading').hidden = false;
       try {
-        const r = await api('/generate', { prompt: style ? text + ', ' + style : text, steps: Number(steps.value) });
+        const r = await api('/generate', { prompt: style ? text + ', ' + style : text });
         if (r.status === 401) { location.replace('../log/one.html'); return; }
-        if (!r.data || !r.data.ok || typeof r.data.image !== 'string' || !r.data.image.startsWith('data:image/')) throw new Error((r.data && r.data.error) || 'ai_failed');
+        if (!r.data || !r.data.ok || typeof r.data.image !== 'string' || !r.data.image.startsWith('data:image/')) { if (r.data && r.data.reason) console.error('Sirb generate:', r.data.reason); throw new Error((r.data && r.data.error) || 'ai_failed'); }
         let id = chatId;
         try {
           if (!id || !(await S.chat(id))) id = (await S.createChat(text)).id;
-          await S.addImage(id, r.data.image, { prompt: text, style, styleName, steps: r.data.steps, seed: r.data.seed });
+          await S.addImage(id, r.data.image, { prompt: text, style, styleName, model: r.data.model, seed: r.data.seed });
           await S.touchChat(id);
         } catch (err) { throw new Error('storage'); }
         $('costVal').textContent = String(r.data.cost || 0);
+        if (typeof r.data.usedToday === 'number') { user.usedToday = r.data.usedToday; usage(); }
         if (id !== chatId) { chatId = id; location.hash = '#studio/' + id; }
         else { await renderChats(); await renderThread(); }
       } catch (err) {

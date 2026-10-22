@@ -62,7 +62,9 @@ body {
 .en { font-family: var(--font-en); }
 .upper { text-transform: uppercase; letter-spacing: 3px; }
 
-.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: square; stroke-linejoin: miter; flex-shrink: 0; }
+.ic .d { fill: var(--primary); stroke: none; }
+.btn .ic .d, .plan .ic .d { fill: currentColor; }
 
 .layout {
   min-height: 100vh;
