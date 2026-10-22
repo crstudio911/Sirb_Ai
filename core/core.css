@@ -254,3 +254,25 @@ body {
   html { scroll-behavior: auto; }
 }
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+:root { --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --ease: cubic-bezier(.2,.7,.2,1); }
+body { font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, var(--glow), transparent 60%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 56px 56px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 56px 56px,
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+  background-attachment: fixed; }
+h1, h2, h3 { line-height: 1.25; letter-spacing: -.01em; text-wrap: balance; }
+p { text-wrap: pretty; }
+::selection { background: var(--primary); color: var(--on-primary); }
+a, button, input, select, textarea { transition: color .2s var(--ease), background-color .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease), transform .2s var(--ease); }
+button:not(:disabled):active { transform: translateY(1px); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--r-sm); }
+input:focus { box-shadow: 0 0 0 4px var(--glow); border-color: var(--primary) !important; }
+svg { flex-shrink: 0; }
+::-webkit-scrollbar { width: 10px; } ::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; border: 2px solid var(--bg-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }

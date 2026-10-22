@@ -1,32 +1,224 @@
 (function () {
   'use strict';
 
+  const VIEWS = ['studio', 'library', 'wallet', 'profile'];
+  const VKEY = 'sirb-view';
+  const $ = id => document.getElementById(id);
+  const ERR = {
+    unauthorized: 'انتهت الجلسة، سجل الدخول مرة أخرى',
+    prompt_short: 'اكتب وصف أطول شوية',
+    gen_rate: 'استنى دقيقة وجرب تاني',
+    ai_failed: 'حصلت مشكلة في الإنشاء، جرب تاني',
+    ai_config: 'خدمة الإنشاء لسه مش متظبطة',
+    config: 'رابط الخادم لم يُضبط بعد',
+    storage: 'المتصفح منع حفظ الصورة على الجهاز'
+  };
+  const S = window.SirbStore;
+  const urls = new Map();
+  const urlOf = img => { if (!urls.has(img.id)) urls.set(img.id, URL.createObjectURL(img.blob)); return urls.get(img.id); };
+  const fmt = t => new Date(t).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+
+  let toastT;
+  function toast(t) {
+    const el = $('toast');
+    el.textContent = t;
+    el.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  function svg(name) {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('class', 'ic');
+    const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    u.setAttribute('href', '#i-' + name);
+    s.append(u);
+    return s;
+  }
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function download(img) {
+    const a = document.createElement('a');
+    a.href = urlOf(img); a.download = 'sirb-' + img.seed + '.jpg';
+    document.body.append(a); a.click(); a.remove();
+  }
+
+  function parseHash() {
+    const [v, id] = location.hash.slice(1).split('/');
+    if (VIEWS.includes(v)) return { view: v, chat: v === 'studio' ? id || null : null };
+    try {
+      const s = JSON.parse(localStorage.getItem(VKEY) || 'null');
+      if (s && VIEWS.includes(s.view)) return s;
+    } catch (e) {}
+    return { view: 'studio', chat: null };
+  }
+
   document.addEventListener('DOMContentLoaded', async function () {
-    const { session, logout } = window.SirbApi;
+    const { session, logout, api } = window.SirbApi;
     const user = await session();
     if (!user) { location.replace('../log/one.html'); return; }
 
-    document.getElementById('userName').textContent = user.name;
-    document.getElementById('inviteCode').textContent = user.inviteCode;
-    document.getElementById('mainCard').hidden = false;
+    $('uName').textContent = user.name;
+    $('uEmail').textContent = user.email || '';
+    $('pEmail').textContent = user.email || '';
+    $('uCode').textContent = user.inviteCode;
+    $('pCode').textContent = user.inviteCode;
+    document.querySelectorAll('[data-user-name]').forEach(e => { e.textContent = user.name; });
+    $('shell').hidden = false;
 
-    const msg = document.getElementById('mainMsg');
-    document.getElementById('copyLink').addEventListener('click', async function () {
-      const url = new URL('../log/one.html', location.href);
-      url.search = '?invite=' + encodeURIComponent(user.inviteCode);
-      try {
-        await navigator.clipboard.writeText(url.toString());
-        msg.textContent = 'تم نسخ رابط الدعوة';
-        msg.className = 'msg success';
-      } catch (e) {
-        msg.textContent = url.toString();
-        msg.className = 'msg info';
+    let chatId = null;
+
+    async function renderChats() {
+      const list = $('chatList');
+      const chats = await S.chats();
+      list.textContent = '';
+      chats.forEach(c => {
+        const b = el('a', 'chat-item' + (c.id === chatId ? ' active' : ''));
+        b.href = '#studio/' + c.id;
+        b.append(svg('history'), el('span', '', c.title));
+        const x = el('button', 'chat-del');
+        x.type = 'button'; x.setAttribute('aria-label', 'حذف المحادثة'); x.textContent = '×';
+        x.addEventListener('click', async e => {
+          e.preventDefault(); e.stopPropagation();
+          if (!confirm('حذف المحادثة "' + c.title + '" وكل صورها؟')) return;
+          await S.deleteChat(c.id);
+          if (chatId === c.id) location.hash = '#studio';
+          else renderChats();
+        });
+        b.append(x);
+        list.append(b);
+      });
+      return chats;
+    }
+
+    async function renderThread() {
+      const th = $('thread');
+      th.querySelectorAll('.turn').forEach(n => n.remove());
+      const chat = chatId ? await S.chat(chatId) : null;
+      $('chatTitle').textContent = chat ? chat.title : '';
+      const imgs = chat ? await S.imagesOf(chatId) : [];
+      $('emptyState').hidden = imgs.length > 0;
+      imgs.forEach(i => th.append(turn(i)));
+      th.scrollTop = th.scrollHeight;
+    }
+
+    function turn(i) {
+      const t = el('article', 'turn');
+      const q = el('p', 'turn-prompt', i.prompt);
+      const meta = el('span', 'turn-meta', (i.styleName ? i.styleName + ' · ' : '') + 'دقة ' + i.steps + ' · ' + fmt(i.t));
+      const im = el('img'); im.src = urlOf(i); im.alt = i.prompt; im.loading = 'lazy';
+      const acts = el('div', 'turn-acts');
+      const d = el('button', 'icon-btn'); d.type = 'button'; d.setAttribute('aria-label', 'تحميل'); d.append(svg('download'));
+      d.addEventListener('click', () => download(i));
+      const e = el('button', 'icon-btn'); e.type = 'button'; e.setAttribute('aria-label', 'تعديل الوصف'); e.append(svg('prompt'));
+      e.addEventListener('click', () => { $('prompt').value = i.prompt; $('prompt').dispatchEvent(new Event('input')); $('prompt').focus(); });
+      acts.append(d, e);
+      t.append(q, meta, im, acts);
+      return t;
+    }
+
+    async function renderLibrary() {
+      const grid = $('grid');
+      const [imgs, chats] = await Promise.all([S.allImages(), S.chats()]);
+      const names = new Map(chats.map(c => [c.id, c.title]));
+      grid.textContent = '';
+      $('libraryEmpty').hidden = imgs.length > 0;
+      $('libCount').textContent = imgs.length ? imgs.length + ' صورة' : '';
+      imgs.forEach(i => {
+        const fig = el('figure');
+        const im = el('img'); im.src = urlOf(i); im.alt = i.prompt; im.loading = 'lazy';
+        const cap = el('figcaption');
+        cap.append(el('p', 'cap-prompt', i.prompt));
+        const go = el('a', 'cap-chat'); go.href = '#studio/' + i.chatId;
+        go.append(svg('history'), el('span', '', names.get(i.chatId) || 'محادثة'));
+        cap.append(go);
+        const d = el('button', 'icon-btn dl'); d.type = 'button'; d.setAttribute('aria-label', 'تحميل'); d.append(svg('download'));
+        d.addEventListener('click', () => download(i));
+        fig.append(im, cap, d);
+        grid.append(fig);
+      });
+    }
+
+    async function show() {
+      let { view, chat } = parseHash();
+      if (view === 'studio') {
+        if (chat && !(await S.chat(chat))) chat = null;
+        if (!chat && !location.hash.startsWith('#studio')) { const c = (await S.chats())[0]; chat = c ? c.id : null; }
+        chatId = chat;
       }
+      document.querySelectorAll('.view').forEach(v => { v.hidden = v.dataset.view !== view; });
+      document.querySelectorAll('.tabs-bar a').forEach(a => {
+        const on = a.dataset.view === view;
+        a.classList.toggle('active', on);
+        a.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (a.dataset.view === 'studio') a.href = chatId ? '#studio/' + chatId : '#studio';
+      });
+      try { localStorage.setItem(VKEY, JSON.stringify({ view, chat: view === 'studio' ? chatId : null })); } catch (e) {}
+      if (view === 'studio') { await renderChats(); await renderThread(); }
+      if (view === 'library') await renderLibrary();
+    }
+
+    try { await show(); } catch (e) { toast(ERR.storage); }
+    window.addEventListener('hashchange', () => show().catch(() => toast(ERR.storage)));
+
+    const inviteUrl = () => { const u = new URL('../log/one.html', location.href); u.search = '?invite=' + encodeURIComponent(user.inviteCode); return u.toString(); };
+    const copy = async (text, ok) => { try { await navigator.clipboard.writeText(text); toast(ok); } catch (e) { toast(text); } };
+    $('copyCode').addEventListener('click', () => copy(user.inviteCode, 'تم نسخ كود الدعوة'));
+    $('copyLink').addEventListener('click', () => copy(inviteUrl(), 'تم نسخ رابط الدعوة'));
+    $('shareBtn').addEventListener('click', async () => {
+      if (navigator.share) { try { await navigator.share({ title: 'Sirb_Ai', text: 'انضم لـ Sirb Ai', url: inviteUrl() }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+      copy(inviteUrl(), 'تم نسخ رابط الدعوة');
+    });
+    $('logoutBtn').addEventListener('click', async () => { await logout(); location.replace('../log/one.html'); });
+    $('newChat').addEventListener('click', () => { chatId = null; location.hash = '#studio'; show(); $('prompt').focus(); });
+
+    const prompt = $('prompt'), steps = $('steps');
+    prompt.addEventListener('input', () => { $('count').textContent = prompt.value.length + ' / 1000'; });
+    steps.addEventListener('input', () => { $('stepsVal').textContent = steps.value; });
+    let style = '', styleName = '';
+    $('styles').addEventListener('click', e => {
+      const b = e.target.closest('.pill');
+      if (!b) return;
+      document.querySelectorAll('#styles .pill').forEach(p => p.classList.toggle('active', p === b));
+      style = b.dataset.style || '';
+      styleName = style ? b.textContent : '';
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', async function () {
-      await logout();
-      location.replace('../log/one.html');
+    let busy = false;
+    $('genForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (busy) return;
+      const text = prompt.value.trim();
+      const msg = $('genMsg');
+      if (text.length < 3) { msg.textContent = ERR.prompt_short; msg.className = 'msg error'; prompt.focus(); return; }
+      busy = true;
+      msg.textContent = ''; msg.className = 'msg';
+      $('genBtn').disabled = true; $('loading').hidden = false;
+      try {
+        const r = await api('/generate', { prompt: style ? text + ', ' + style : text, steps: Number(steps.value) });
+        if (r.status === 401) { location.replace('../log/one.html'); return; }
+        if (!r.data || !r.data.ok || typeof r.data.image !== 'string' || !r.data.image.startsWith('data:image/')) throw new Error((r.data && r.data.error) || 'ai_failed');
+        let id = chatId;
+        try {
+          if (!id || !(await S.chat(id))) id = (await S.createChat(text)).id;
+          await S.addImage(id, r.data.image, { prompt: text, style, styleName, steps: r.data.steps, seed: r.data.seed });
+          await S.touchChat(id);
+        } catch (err) { throw new Error('storage'); }
+        $('costVal').textContent = String(r.data.cost || 0);
+        if (id !== chatId) { chatId = id; location.hash = '#studio/' + id; }
+        else { await renderChats(); await renderThread(); }
+      } catch (err) {
+        const k = err && err.name === 'AbortError' ? 'ai_failed' : err && err.message;
+        msg.textContent = ERR[k] || 'تعذر الاتصال بالخادم';
+        msg.className = 'msg error';
+      } finally {
+        busy = false;
+        $('genBtn').disabled = false; $('loading').hidden = true;
+      }
     });
   });
 })();

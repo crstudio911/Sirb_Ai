@@ -20,7 +20,7 @@
   async function api(path, body) {
     if (!API || !/^https:\/\//.test(API) || /YOUR-WORKER/i.test(API)) throw new Error('config');
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 20000);
+    const timer = setTimeout(() => ctrl.abort(), path === '/generate' ? 90000 : 20000);
     try {
       const res = await fetch(API + path, {
         method: 'POST',
@@ -45,7 +45,7 @@
     try { const u = JSON.parse(sessionStorage.getItem(KEY) || 'null'); return u && typeof u.name === 'string' ? u : null; } catch (e) { return null; }
   }
   function store(u) {
-    try { u ? sessionStorage.setItem(KEY, JSON.stringify({ name: u.name, inviteCode: u.inviteCode })) : sessionStorage.removeItem(KEY); } catch (e) {}
+    try { u ? sessionStorage.setItem(KEY, JSON.stringify({ name: u.name, email: u.email || '', inviteCode: u.inviteCode, plan: u.plan || 'free' })) : sessionStorage.removeItem(KEY); } catch (e) {}
   }
   let pending = null;
   function session(force) {
