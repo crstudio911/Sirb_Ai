@@ -77,7 +77,12 @@
       return all.sort((a, b) => b.t - a.t);
     },
     async addImage(chatId, dataUrl, meta) {
-      const item = { id: uid(), chatId, blob: dataToBlob(dataUrl), prompt: meta.prompt, style: meta.style || '', styleName: meta.styleName || '', model: meta.model || '', seed: meta.seed, t: Date.now() };
+      const item = { id: uid(), chatId, blob: dataToBlob(dataUrl), prompt: meta.prompt, style: meta.style || '', styleName: meta.styleName || '', model: meta.model || '', seed: meta.seed, refs: meta.refs || [], mode: meta.mode || 'normal', t: Date.now() };
+      await tx('images', 'readwrite', s => req(s.put(item)));
+      return item;
+    },
+    async addVideo(chatId, blob, url, meta) {
+      const item = { id: uid(), chatId, kind: 'video', blob: blob || null, url: url || '', prompt: meta.prompt, style: meta.style || '', styleName: meta.styleName || '', model: meta.model || '', seed: meta.seed || Date.now() % 1000000, seconds: meta.seconds || 0, refs: meta.refs || [], t: Date.now() };
       await tx('images', 'readwrite', s => req(s.put(item)));
       return item;
     },

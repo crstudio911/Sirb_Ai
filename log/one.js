@@ -24,10 +24,10 @@
     code_expired: 'انتهت صلاحية الكود، اطلب كوداً جديداً',
     otp_wait: 'انتظر قليلاً قبل طلب كود جديد',
     mail_failed: 'تعذر إرسال الكود، حاول مرة أخرى',
-    mail_config: 'خدمة البريد غير مُعدّة بعد',
-    busy: 'الخادم مشغول، حاول مرة أخرى',
-    network: 'تعذر الاتصال بالخادم',
-    config: 'لم يتم ضبط رابط الخادم بعد في core/config.js',
+    mail_config: 'تعذر إرسال الكود الآن، حاول بعد قليل',
+    busy: 'الخدمة مشغولة، حاول مرة أخرى',
+    network: 'تعذر الاتصال، تأكد من الإنترنت وحاول مرة أخرى',
+    config: 'الخدمة غير متاحة الآن، حاول بعد قليل',
     default: 'حدث خطأ، حاول مرة أخرى'
   };
 
@@ -143,9 +143,7 @@
   }
 
   function setMsg(form, text, type) {
-    const m = $('.msg', form);
-    m.textContent = text || '';
-    m.className = 'msg' + (type ? ' ' + type : '');
+    window.SirbUI.msg($('.msg', form), text, type);
   }
 
   function lock(form, on) {
@@ -172,7 +170,7 @@
           location.replace('../main/main.html');
           return;
         }
-        setMsg(form, ERRORS[r.data.error] || ERRORS.default, 'error');
+        setMsg(form, ERRORS[r.data && r.data.error] || ERRORS.default, 'error');
       } catch (err) {
         setMsg(form, err && err.message === 'config' ? ERRORS.config : ERRORS.network, 'error');
       }

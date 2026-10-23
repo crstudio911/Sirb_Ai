@@ -278,3 +278,22 @@ svg { flex-shrink: 0; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; border: 2px solid var(--bg-2); }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* رسائل النجاح والخطأ */
+.msg { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.note-mark { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; }
+.note-ic { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.note-mark.ok { color: var(--success); }
+.note-mark.err { color: var(--error); }
+.note-mark.warn { color: var(--warning, var(--error)); border: 0; }
+.note-mark.warn .note-ic { width: 20px; height: 20px; stroke-width: 2; }
+.note-mark.info { color: var(--info); }
+.notes { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; width: min(92vw, 420px); pointer-events: none; }
+.note { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--card-solid); color: var(--text); border: 1px solid var(--line); border-inline-start: 4px solid var(--info); box-shadow: 0 10px 30px -12px var(--bg); font-weight: 600; opacity: 0; transform: translateY(12px); transition: opacity .25s, transform .25s; }
+.note.show { opacity: 1; transform: none; }
+.note.ok { border-inline-start-color: var(--success); }
+.note.err { border-inline-start-color: var(--error); }
+.note.warn { border-inline-start-color: var(--warning, var(--error)); }
+.note > span:nth-child(2) { flex: 1; line-height: 1.5; }
+.note-x { background: none; border: 0; color: var(--muted, var(--text)); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; }
+@media (prefers-reduced-motion: reduce) { .note { transition: none; } }
