@@ -67,7 +67,7 @@
   async function api(path, body) {
     if (!API || !/^https:\/\//.test(API) || /YOUR-WORKER/i.test(API)) { log('WORKER_URL is missing or invalid in core/config.js'); throw new Error('config'); }
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), (path === '/generate' || path === '/video') ? 150000 : 25000);
+    const timer = setTimeout(() => ctrl.abort(), (path === '/generate' || path === '/video') ? 150000 : path === '/video-status' ? 60000 : 25000);
     try {
       const res = await fetch(API + path, {
         method: 'POST',
@@ -96,7 +96,7 @@
     try { const u = JSON.parse(sessionStorage.getItem(KEY) || 'null'); return u && typeof u.name === 'string' ? u : null; } catch (e) { return null; }
   }
   function store(u) {
-    try { u ? sessionStorage.setItem(KEY, JSON.stringify({ name: u.name, email: u.email || '', inviteCode: u.inviteCode, plan: u.plan || 'free' })) : sessionStorage.removeItem(KEY); } catch (e) {}
+    try { u ? sessionStorage.setItem(KEY, JSON.stringify(u)) : sessionStorage.removeItem(KEY); } catch (e) {}
   }
   let pending = null;
   function session(force) {
