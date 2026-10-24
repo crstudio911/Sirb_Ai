@@ -6,32 +6,32 @@
   const $ = id => document.getElementById(id);
   const ERR = {
     unauthorized: 'انتهت الجلسة، سجل الدخول مرة أخرى',
-    prompt_short: 'اكتب وصف أطول شوية',
-    gen_rate: 'وصلت لحد الصور في الدقيقة، استنى شوية وجرب تاني',
-    no_credits: 'رصيدك من الكريديت مش كفاية للطلب ده',
-    pro_required: 'وضع Pro متاح لمشتركي خطة Pro بس',
-    refs_limit: 'عدد الصور المرجعية أكتر من المسموح أو الصورة مش مدعومة',
-    video_len: 'مدة الفيديو مش مسموحة',
-    fal_config: 'الخدمة مش متاحة دلوقتي، جرب تاني بعد شوية',
-    size: 'الصور المرجعية حجمها كبير، جرب صور أقل',
-    server: 'الخدمة مشغولة دلوقتي، جرب تاني',
-    ai_failed: 'حصلت مشكلة في الإنشاء، جرب تاني',
-    ai_quota: 'الخدمة عليها ضغط كبير دلوقتي، جرب تاني بعد شوية',
-    ai_config: 'الخدمة مش متاحة دلوقتي، جرب تاني بعد شوية',
-    config: 'الخدمة مش متاحة دلوقتي، جرب تاني بعد شوية',
-    storage: 'المتصفح منع الحفظ على جهازك، اتأكد إنك مش في وضع التصفح الخفي',
-    need_start: 'صورة النهاية لوحدها محتاجة فيديو 10 ثواني أو أكتر، أو ضيف صورة بداية',
-    busy: 'الخدمة مشغولة دلوقتي، جرب تاني بعد ثواني',
-    plan_invalid: 'الباقة دي مش متاحة دلوقتي',
-    credits_invalid: 'عدد الكريديت مش مسموح',
-    code_invalid: 'الكود ده مش صحيح',
-    code_expired: 'الكود ده انتهت صلاحيته',
-    code_used_up: 'الكود ده خلص عدد استخداماته',
-    code_not_applicable: 'الكود ده مش شغال على الطلب ده',
-    too_many_pending: 'عندك طلبات لسه مستنية الموافقة، استنى لما تتراجع',
+    prompt_short: 'اكتب وصفاً أطول قليلاً',
+    gen_rate: 'بلغت الحد الأقصى للصور في الدقيقة، انتظر قليلاً وحاول مرة أخرى',
+    no_credits: 'رصيدك من الكريديت غير كافٍ لهذا الطلب',
+    pro_required: 'وضع Pro متاح لمشتركي خطة Pro فقط',
+    refs_limit: 'عدد الصور المرجعية يتجاوز الحد المسموح أو الصورة غير مدعومة',
+    video_len: 'مدة الفيديو غير مسموحة',
+    fal_config: 'الخدمة غير متاحة حالياً، حاول مرة أخرى بعد قليل',
+    size: 'حجم الصور المرجعية كبير، حاول استخدام صور أقل',
+    server: 'الخدمة مشغولة حالياً، حاول مرة أخرى',
+    ai_failed: 'حدثت مشكلة أثناء الإنشاء، حاول مرة أخرى',
+    ai_quota: 'تشهد الخدمة ضغطاً كبيراً حالياً، حاول مرة أخرى بعد قليل',
+    ai_config: 'الخدمة غير متاحة حالياً، حاول مرة أخرى بعد قليل',
+    config: 'الخدمة غير متاحة حالياً، حاول مرة أخرى بعد قليل',
+    storage: 'منع المتصفح الحفظ على جهازك، تأكد من عدم استخدام وضع التصفح الخفي',
+    need_start: 'صورة النهاية وحدها تتطلب فيديو مدته 10 ثواني أو أكثر، أو أضف صورة بداية',
+    busy: 'الخدمة مشغولة حالياً، حاول مرة أخرى بعد ثوانٍ',
+    plan_invalid: 'هذه الباقة غير متاحة حالياً',
+    credits_invalid: 'عدد الكريديت غير مسموح',
+    code_invalid: 'هذا الكود غير صحيح',
+    code_expired: 'انتهت صلاحية هذا الكود',
+    code_used_up: 'استُنفد عدد استخدامات هذا الكود',
+    code_not_applicable: 'لا ينطبق هذا الكود على هذا الطلب',
+    too_many_pending: 'لديك طلبات بانتظار الموافقة، انتظر حتى تُراجع',
     shop_closed: 'الشراء متوقف مؤقتاً',
-    gift_invalid: 'كود الهدية مش صحيح',
-    gift_used: 'إنت استخدمت الكود ده قبل كده'
+    gift_invalid: 'كود الهدية غير صحيح',
+    gift_used: 'سبق أن استخدمت هذا الكود'
   };
   const S = window.SirbStore;
   const urls = new Map();
@@ -125,8 +125,8 @@
       $('useBar').style.width = renew ? Math.min(100, w.total / Math.max(renew, w.total, 1) * 100) + '%' : '0%';
       const next = w.nextAt ? new Date(w.nextAt).toLocaleString('ar-EG', { weekday: 'long', hour: 'numeric', minute: '2-digit' }) : '';
       $('useNote').textContent = next
-        ? 'رصيدك خلص. هيتضافلك ' + num(renew) + ' كريديت ' + next + '.'
-        : 'الرصيد بيفضل معاك. لما يوصل ' + num(min) + ' أو أقل، بيتضافلك ' + num(renew) + ' كريديت بعد ' + (w.renewHours || 12) + ' ساعة.';
+        ? 'نفد رصيدك. سيُضاف إليك ' + num(renew) + ' كريديت ' + next + '.'
+        : 'يبقى الرصيد في حسابك. عندما يصل إلى ' + num(min) + ' أو أقل، يُضاف إليك ' + num(renew) + ' كريديت بعد ' + (w.renewHours || 12) + ' ساعة.';
       $('quota').textContent = 'رصيدك ' + num(w.total);
       try { updateCost(); } catch (e) {}
     }
@@ -183,11 +183,11 @@
       const draw = async () => {
         const items = await S.ledgerAll(100, owner());
         box.textContent = '';
-        if (!items.length) { box.append(el('span', 'hint', 'مفيش حركات لسه')); return; }
+        if (!items.length) { box.append(el('span', 'hint', 'لا توجد حركات بعد')); return; }
         await stream(items, it => {
           const row = el('div');
           const name = ACT[it.action] || it.action;
-          const left = el('span', '', name + (it.status === 'refunded' ? ' · اترجع' : it.status === 'held' ? ' · جاري' : ''));
+          const left = el('span', '', name + (it.status === 'refunded' ? ' · استُردّ' : it.status === 'held' ? ' · جاري' : ''));
           row.append(left, el('small', '', fmt(it.t)), el('span', it.credits >= 0 ? 'plus' : 'minus', (it.credits > 0 ? '+' : '') + it.credits));
           return row;
         }, f => box.append(f));
@@ -241,7 +241,7 @@
       const q = filter.trim().toLowerCase();
       const shown = q ? chats.filter(c => c.title.toLowerCase().includes(q) || imgs.some(i => i.chatId === c.id && String(i.prompt).toLowerCase().includes(q))) : chats;
       list.textContent = '';
-      if (!shown.length) list.append(el('span', 'chat-none', chats.length ? 'مفيش نتايج' : 'السجل فاضي'));
+      if (!shown.length) list.append(el('span', 'chat-none', chats.length ? 'لا توجد نتائج' : 'السجل فارغ'));
       const items = [];
       shown.forEach(c => {
         const b = el('a', 'chat-item' + (c.id === chatId ? ' active' : ''));
@@ -326,8 +326,8 @@
       e.addEventListener('click', () => { $('prompt').value = i.prompt; $('prompt').dispatchEvent(new Event('input')); $('prompt').focus(); });
       acts.append(d, e);
       if (i.kind !== 'video' && i.blob) {
-        const rf = el('button', 'icon-btn'); rf.type = 'button'; rf.setAttribute('aria-label', 'استخدمها كمرجع'); rf.title = 'عدّل على الصورة دي'; rf.append(svg('ref'));
-        rf.addEventListener('click', () => addRefBlob(i.blob).then(ok => { if (ok) toast(kind === 'video' ? 'الصورة اتضافت كصورة للفيديو' : 'الصورة اتضافت كمرجع، اكتب التعديل اللي عايزه', 'ok'); $('prompt').focus(); }));
+        const rf = el('button', 'icon-btn'); rf.type = 'button'; rf.setAttribute('aria-label', 'استخدمها كمرجع'); rf.title = 'عدّل هذه الصورة'; rf.append(svg('ref'));
+        rf.addEventListener('click', () => addRefBlob(i.blob).then(ok => { if (ok) toast(kind === 'video' ? 'أُضيفت الصورة كصورة للفيديو' : 'أُضيفت الصورة كمرجع، اكتب التعديل المطلوب', 'ok'); $('prompt').focus(); }));
         acts.append(rf);
       }
       t.append(media(i), acts);
@@ -405,8 +405,15 @@
     const prompt = $('prompt');
     prompt.addEventListener('input', () => { $('count').textContent = prompt.value.length + ' / 1000'; });
     const P = window.SirbPresets;
-    let CATS = P.CATS;
+    let ICATS = P.CATS;
+    let CATS = ICATS;
     let cat = CATS[0];
+    function setCats(video) {
+      const list = video ? P.VCATS : ICATS;
+      if (CATS === list) return;
+      CATS = list; cat = CATS.find(c => c.id === cat.id) || CATS[0];
+      picked.clear(); renderCats(); renderOpts();
+    }
     const picked = new Map();
     function renderOpts() {
       const box = $('opts');
@@ -444,8 +451,11 @@
     renderCats(); renderOpts();
     api('/presets', {}).then(r => {
       if (!r.data || !r.data.ok || !Array.isArray(r.data.cats) || !r.data.cats.length) return;
-      CATS = r.data.cats.filter(c => c && Array.isArray(c.groups));
-      if (!CATS.length) { CATS = P.CATS; return; }
+      const got = r.data.cats.filter(c => c && Array.isArray(c.groups));
+      if (!got.length) return;
+      ICATS = got;
+      if (kind === 'video') return;
+      CATS = ICATS;
       cat = CATS.find(c => c.id === cat.id) || CATS[0];
       picked.clear(); renderCats(); renderOpts();
     }).catch(() => {});
@@ -453,12 +463,12 @@
       const parts = cat.base ? [cat.base] : [];
       const names = [];
       picked.forEach(key => { const [gi, oi] = key.split(':').map(Number); const o = cat.groups[gi].opts[oi]; parts.push(o[1]); names.push(o[0]); });
-      if (parts.length) parts.push(P.NOTE);
+      if (parts.length) parts.push(kind === 'video' ? P.VNOTE : P.NOTE);
       return { text: parts.join(', '), names: [cat.id !== 'free' ? cat.name : ''].concat(names).filter(Boolean).join(' · ') };
     }
     $('chatSearch').addEventListener('input', e => { filter = e.target.value; renderChats(); });
 
-    const STAGES = [[0, 'جاري الإعداد...'], [1500, 'جاري ترجمة وفهم الوصف...'], [4500, 'جاري رسم الصورة...'], [10000, 'جاري العمل على التفاصيل...'], [18000, 'جاري إضافة اللمسات الأخيرة...'], [30000, 'قربنا نخلص، ثواني...']];
+    const STAGES = [[0, 'جاري الإعداد...'], [1500, 'جاري ترجمة وفهم الوصف...'], [4500, 'جاري رسم الصورة...'], [10000, 'جاري العمل على التفاصيل...'], [18000, 'جاري إضافة اللمسات الأخيرة...'], [30000, 'أوشكنا على الانتهاء، لحظات...']];
     let stageT = [];
     function stages(on) {
       stageT.forEach(clearTimeout); stageT = [];
@@ -504,7 +514,7 @@
         row.insertBefore(box, $('refAdd'));
       });
       $('refAdd').classList.toggle('full', refs.length >= maxRefs());
-      $('refsHint').textContent = refs.length + ' / ' + maxRefs() + (refs.length ? (refs.length > 1 ? ' · اكتب مثلاً: حط الشخص من صورة 1 في مكان صورة 2' : ' · اكتب التعديل اللي عايزه أو "زي الصورة دي"') : '');
+      $('refsHint').textContent = refs.length + ' / ' + maxRefs() + (refs.length ? (refs.length > 1 ? ' · اكتب مثلاً: ضع الشخص من صورة 1 في مكان صورة 2' : ' · اكتب التعديل المطلوب أو "مثل هذه الصورة"') : '');
       updateCost();
     }
 
@@ -542,14 +552,14 @@
     }
 
     function okBlob(blob) {
-      if (!blob || !/^image\/(png|jpeg|webp)$/.test(blob.type)) { toast('الصورة لازم تكون PNG أو JPG أو WEBP', 'warn'); return false; }
+      if (!blob || !/^image\/(png|jpeg|webp)$/.test(blob.type)) { toast('يجب أن تكون الصورة بصيغة PNG أو JPG أو WEBP', 'warn'); return false; }
       if (blob.size > 15 * 1024 * 1024) { toast('الصورة أكبر من 15 ميجا', 'warn'); return false; }
       return true;
     }
     async function setFrame(k, blob) {
       if (!okBlob(blob)) return false;
       try { frames[k] = { blob, data: await shrink(blob, 1024, .88), thumb: await shrink(blob, 200, .75) }; renderFrames(); return true; }
-      catch (e) { toast('مقدرتش أقرا الصورة دي', 'err'); return false; }
+      catch (e) { toast('تعذرت قراءة هذه الصورة', 'err'); return false; }
     }
     async function addRefBlob(blob) {
       if (kind === 'video') return setFrame(!frames.start ? 'start' : 'end', blob);
@@ -559,7 +569,7 @@
         refs.push({ blob, data: await shrink(blob, refSide(), .9), thumb: await shrink(blob, 120, .7) });
         renderRefs();
         return true;
-      } catch (e) { toast('مقدرتش أقرا الصورة دي', 'err'); return false; }
+      } catch (e) { toast('تعذرت قراءة هذه الصورة', 'err'); return false; }
     }
 
     async function rebuildRefs() {
@@ -600,7 +610,7 @@
       }
       $('durNote').textContent = durNote();
     }
-    const durNote = () => seconds > 5 ? 'هيتعمل على ' + seconds / 5 + ' أجزاء كل جزء 5 ثواني، وكل جزء بيكمل من آخر لقطة في اللي قبله، وبعدين بندمجهم في فيديو واحد' : 'فيديو واحد 5 ثواني';
+    const durNote = () => seconds > 5 ? 'سيُنشأ على ' + seconds / 5 + ' أجزاء كل جزء 5 ثواني، وكل جزء يتابع من آخر لقطة في الجزء السابق، ثم ندمجها في فيديو واحد' : 'فيديو واحد 5 ثواني';
 
     function syncUi() {
       if (mode === 'pro' && !canPro()) { mode = 'normal'; kind = 'image'; }
@@ -616,7 +626,8 @@
       $('refsBox').hidden = kind === 'video';
       $('promptLabel').textContent = kind === 'video' ? 'وصف الفيديو' : 'وصف الصورة';
       $('genLabel').textContent = kind === 'video' ? 'إنشاء الفيديو' : 'إنشاء الصورة';
-      prompt.placeholder = kind === 'video' ? 'مثال: كاميرا بتلف حوالين قلعة فوق جبل وقت الغروب، سحاب بيتحرك' : 'مثال: مدينة مستقبلية فوق السحاب وقت الغروب، إضاءة سينمائية';
+      prompt.placeholder = kind === 'video' ? 'مثال: كاميرا تدور حول قلعة فوق جبل وقت الغروب، سحاب يتحرك' : 'مثال: مدينة مستقبلية فوق السحاب وقت الغروب، إضاءة سينمائية';
+      setCats(kind === 'video');
       renderFrames();
       rebuildRefs();
     }
@@ -648,10 +659,10 @@
 
     function jobNote(j, d) {
       if (typeof d.position === 'number' && d.position > 0) return 'في الطابور، قبلك ' + d.position + '...';
-      if (d.phase === 'merge') return 'خلصنا كل الأجزاء، بندمجهم في فيديو واحد دلوقتي...';
+      if (d.phase === 'merge') return 'اكتملت جميع الأجزاء، وندمجها الآن في فيديو واحد...';
       const parts = d.parts || j.parts || 1;
-      if (parts > 1) return 'بنعمل الجزء ' + (d.part || 1) + ' من ' + parts + '... ممكن ياخد كام دقيقة. تقدر تقفل الصفحة وترجع';
-      return 'الفيديو بيتعمل دلوقتي، ممكن ياخد كام دقيقة. تقدر تقفل الصفحة وترجع';
+      if (parts > 1) return 'ننشئ الجزء ' + (d.part || 1) + ' من ' + parts + '... قد يستغرق بضع دقائق. يمكنك إغلاق الصفحة والعودة';
+      return 'يجري إنشاء الفيديو حالياً، وقد يستغرق بضع دقائق. يمكنك إغلاق الصفحة والعودة';
     }
 
     let polling = false;
@@ -662,12 +673,12 @@
         while (jobs().length) {
           for (const j of jobs()) {
             let r;
-            try { r = await api('/video-status', j.end ? { job: j.job, end: j.end } : { job: j.job }); } catch (e) { continue; }
+            try { r = await api('/video-status', j.end ? { job: j.job, end: j.end } : { job: j.job }, { srv: j.srv }); } catch (e) { continue; }
             if (r.status === 401) return;
             const d = r.data || {};
             if (!d.ok) { if (r.status === 400) saveJobs(jobs().filter(x => x.id !== j.id)); continue; }
             if (d.state === 'running') {
-              if (typeof d.job === 'string') saveJobs(jobs().map(x => x.id === j.id ? Object.assign(x, { job: d.job, part: d.part, phase: d.phase }) : x));
+              if (typeof d.job === 'string') saveJobs(jobs().map(x => x.id === j.id ? Object.assign(x, { job: d.job, part: d.part, phase: d.phase, srv: r.srv || x.srv }) : x));
               const n = document.querySelector('.turn[data-job="' + j.id + '"] .wait span');
               if (n) n.textContent = jobNote(j, d);
               continue;
@@ -675,17 +686,17 @@
             saveJobs(jobs().filter(x => x.id !== j.id));
             if (d.state === 'failed') {
               if (typeof d.total === 'number') setTotal(d.total);
-              toast('الفيديو منجحش، والكريديت رجعلك', 'err'); LOG('video job failed', d.reason || '');
+              toast('تعذر إنشاء الفيديو، وأُعيد الكريديت إليك', 'err'); LOG('video job failed', d.reason || '');
             } else if (d.state === 'done' && typeof d.url === 'string') {
               let blob = null;
               try { const v = await fetch(d.url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' }); if (v.ok) blob = await v.blob(); } catch (e) {}
               let cid = j.chatId;
               try {
                 if (!cid || !(await S.chat(cid))) cid = (await S.createChat(j.prompt)).id;
-                await S.addVideo(cid, blob, d.url, { prompt: j.prompt, style: j.style, styleName: j.styleName, model: 'wan-2.2', seconds: j.seconds, refs: j.refs });
+                await S.addVideo(cid, blob, d.url, { prompt: j.prompt, style: j.style, styleName: j.styleName, model: '', seconds: j.seconds, refs: j.refs });
                 await S.touchChat(cid);
               } catch (e) { toast(ERR.storage, 'err'); LOG('save video failed', e); }
-              toast('الفيديو جاهز ومتسجل على جهازك', 'ok');
+              toast('الفيديو جاهز ومحفوظ على جهازك', 'ok');
             }
             const v = parseHash();
             if (v.view === 'studio') { await renderChats(); await renderThread(); }
@@ -706,7 +717,7 @@
       if (text.length < 3) { SirbUI.msg(msg, ERR.prompt_short, 'error'); prompt.focus(); return; }
       if (kind === 'video' && frames.end && !frames.start && seconds === 5) { SirbUI.msg(msg, ERR.need_start, 'error'); return; }
       const cost = updateCost();
-      if (user.wallet && user.wallet.total < cost) { SirbUI.msg(msg, ERR.no_credits + ' (محتاج ' + cost + '، معاك ' + user.wallet.total + ')', 'error'); return; }
+      if (user.wallet && user.wallet.total < cost) { SirbUI.msg(msg, ERR.no_credits + ' (يتطلب ' + cost + '، لديك ' + user.wallet.total + ')', 'error'); return; }
       busy = true;
       SirbUI.msg(msg, '');
       $('genBtn').disabled = true; $('loading').hidden = false; stages(true);
@@ -728,9 +739,9 @@
           try { if (!id || !(await S.chat(id))) id = (await S.createChat(text)).id; await S.touchChat(id); } catch (err) { throw new Error('storage'); }
           let endKeep = '';
           if (frames.end && seconds > 5) { try { endKeep = await shrink(frames.end.blob, 768, .85); } catch (err) { endKeep = frames.end.data; } }
-          saveJobs(jobs().concat([{ id: S.uid(), job: r.data.job, chatId: id, prompt: text, style, styleName, seconds, parts: r.data.parts || seconds / 5, end: endKeep, refs: thumbs, t: Date.now() }]));
+          saveJobs(jobs().concat([{ id: S.uid(), job: r.data.job, srv: r.srv, chatId: id, prompt: text, style, styleName, seconds, parts: r.data.parts || seconds / 5, end: endKeep, refs: thumbs, t: Date.now() }]));
           if (r.data.wallet) { user.wallet = r.data.wallet; usage(); }
-          SirbUI.msg(msg, 'بدأنا نعمل الفيديو، هيظهر هنا أول ما يخلص', 'success');
+          SirbUI.msg(msg, 'بدأنا إنشاء الفيديو، وسيظهر هنا فور اكتماله', 'success');
           frames.start = null; frames.end = null; renderFrames();
           if (id !== chatId) { chatId = id; location.hash = '#studio/' + id; } else { await renderChats(); await renderThread(); }
           pollJobs();
@@ -749,18 +760,18 @@
         let id = chatId;
         try {
           if (!id || !(await S.chat(id))) id = (await S.createChat(text)).id;
-          await S.addImage(id, r.data.image, { prompt: text, style, styleName, model: r.data.model, seed: r.data.seed, refs: thumbs, mode });
+          await S.addImage(id, r.data.image, { prompt: text, style, styleName, model: '', seed: r.data.seed, refs: thumbs, mode });
           await S.touchChat(id);
         } catch (err) { throw new Error('storage'); }
         if (r.data.wallet) { user.wallet = r.data.wallet; usage(); }
-        SirbUI.msg(msg, 'الصورة اتعملت واتحفظت على جهازك', 'success');
+        SirbUI.msg(msg, 'أُنشئت الصورة وحُفظت على جهازك', 'success');
         refs = []; renderRefs();
         if (id !== chatId) { chatId = id; location.hash = '#studio/' + id; }
         else { await renderChats(); await renderThread(); }
       } catch (err) {
         const k = err && err.name === 'AbortError' ? 'ai_failed' : err && err.message;
         if (!ERR[k]) LOG('generate failed', err);
-        SirbUI.msg(msg, (ERR[k] || 'تعذر الاتصال، اتأكد من الإنترنت وجرب تاني') + (k === 'ai_failed' || k === 'ai_quota' || k === 'fal_config' || k === 'ai_config' ? '. الكريديت رجعلك' : ''), 'error');
+        SirbUI.msg(msg, (ERR[k] || 'تعذر الاتصال، تحقق من اتصال الإنترنت وحاول مرة أخرى') + (k === 'ai_failed' || k === 'ai_quota' || k === 'fal_config' || k === 'ai_config' ? '. أُعيد الكريديت إليك' : ''), 'error');
       } finally {
         busy = false;
         stages(false); $('genBtn').disabled = false; $('loading').hidden = true;
@@ -800,7 +811,7 @@
       $('buyPlanBox').hidden = buy.kind !== 'plan';
       $('buyCreditsBox').hidden = buy.kind !== 'credits';
       const box = $('buyPlanBox'); box.textContent = '';
-      if (!SHOP.plans.length) box.append(el('p', 'hint', 'مفيش باقات متاحة للشراء دلوقتي'));
+      if (!SHOP.plans.length) box.append(el('p', 'hint', 'لا توجد باقات متاحة للشراء حالياً'));
       SHOP.plans.forEach(p => {
         const b = el('button', 'buy-opt' + (p.id === buy.plan ? ' active' : ''));
         b.type = 'button';
@@ -810,18 +821,18 @@
         box.append(b);
       });
       const c = SHOP.credit;
-      $('creditHint').textContent = 'أقل حاجة ' + c.min + ' كريديت بـ ' + usd(c.minPrice) + '، وتقدر تشتري أي عدد أكبر (مثلاً 51)';
+      $('creditHint').textContent = 'الحد الأدنى ' + c.min + ' كريديت بـ ' + usd(c.minPrice) + '، ويمكنك شراء أي عدد أكبر (مثلاً 51)';
       renderSum();
     }
     async function requote() {
       buy.quote = null;
       if (!buy.code) { renderSum(); return; }
-      SirbUI.msg($('discMsg'), 'بنراجع الكود...', 'info');
+      SirbUI.msg($('discMsg'), 'نراجع الكود...', 'info');
       try {
         const r = await api('/quote', { kind: buy.kind, plan: buy.plan, credits: buy.credits, code: buy.code });
-        if (r.data && r.data.ok) { buy.quote = r.data; SirbUI.msg($('discMsg'), 'الكود اتطبق: خصم ' + usd(r.data.discount), 'success'); }
+        if (r.data && r.data.ok) { buy.quote = r.data; SirbUI.msg($('discMsg'), 'تم تطبيق الكود: خصم ' + usd(r.data.discount), 'success'); }
         else { SirbUI.msg($('discMsg'), ERR[r.data && r.data.error] || ERR.code_invalid, 'error'); buy.code = ''; }
-      } catch (e) { SirbUI.msg($('discMsg'), 'تعذر الاتصال، جرب تاني', 'error'); }
+      } catch (e) { SirbUI.msg($('discMsg'), 'تعذر الاتصال، حاول مرة أخرى', 'error'); }
       renderSum();
     }
     async function openBuy(k, planId) {
@@ -866,7 +877,7 @@
       const bm = $('buyMsg');
       if (buy.kind === 'credits' && !subtotal()) { SirbUI.msg(bm, ERR.credits_invalid + ' (' + $('creditHint').textContent + ')', 'error'); return; }
       $('buyConfirm').disabled = true;
-      SirbUI.msg(bm, 'بنسجل طلبك...', 'info');
+      SirbUI.msg(bm, 'نسجل طلبك...', 'info');
       try {
         const r = await api('/order', { kind: buy.kind, plan: buy.plan, credits: buy.credits, code: buy.quote ? buy.code : '' });
         if (!r.data || !r.data.ok || !r.data.order) { SirbUI.msg(bm, ERR[r.data && r.data.error] || ERR.server, 'error'); return; }
@@ -874,11 +885,11 @@
         $('doneInfo').textContent = o.name + ' · ' + usd(o.total);
         step('done');
         loadOrders();
-      } catch (e) { SirbUI.msg(bm, 'تعذر الاتصال، جرب تاني', 'error'); }
+      } catch (e) { SirbUI.msg(bm, 'تعذر الاتصال، حاول مرة أخرى', 'error'); }
       finally { $('buyConfirm').disabled = false; }
     });
 
-    const STATUS = { pending: ['مستني الموافقة', 'warn'], approved: ['اتوافق عليه', 'ok'], rejected: ['مرفوض', 'err'] };
+    const STATUS = { pending: ['بانتظار الموافقة', 'warn'], approved: ['تمت الموافقة عليه', 'ok'], rejected: ['مرفوض', 'err'] };
     let knownOrders = null, ordersT = null;
     async function loadOrders() {
       let r;
@@ -887,12 +898,12 @@
       const list = r.data.orders;
       if (knownOrders) {
         const done = list.filter(o => o.status === 'approved' && knownOrders[o.id] === 'pending');
-        if (done.length) { toast('طلبك "' + done[0].name + '" اتوافق عليه واتضاف لحسابك، والفاتورة جاهزة', 'ok'); refreshUser().then(loadPlans).catch(() => {}); loadLedger(); }
-        list.filter(o => o.status === 'rejected' && knownOrders[o.id] === 'pending').forEach(o => toast('طلبك "' + o.name + '" اترفض' + (o.note ? ': ' + o.note : ''), 'err'));
+        if (done.length) { toast('طلبك "' + done[0].name + '" تمت الموافقة عليه وأُضيف إلى حسابك، والفاتورة جاهزة', 'ok'); refreshUser().then(loadPlans).catch(() => {}); loadLedger(); }
+        list.filter(o => o.status === 'rejected' && knownOrders[o.id] === 'pending').forEach(o => toast('طلبك "' + o.name + '" رُفض' + (o.note ? ': ' + o.note : ''), 'err'));
       }
       knownOrders = {}; list.forEach(o => { knownOrders[o.id] = o.status; });
       const box = $('orders'); box.textContent = '';
-      if (!list.length) box.append(el('span', 'hint', 'مفيش طلبات لسه'));
+      if (!list.length) box.append(el('span', 'hint', 'لا توجد طلبات بعد'));
       await stream(list, o => {
         const row = el('div', 'order-row');
         const t = el('span', 'order-t'); t.append(el('b', '', o.name), el('small', '', fmt(o.time) + (o.code ? ' · كود ' + o.code : '')));
@@ -924,7 +935,7 @@
       tb.append(tr1, tr2);
       const sum = el('dl', 'sum');
       [['السعر', usd(o.subtotal)], o.discount ? ['الخصم' + (o.code ? ' (' + o.code + ')' : ''), '-' + usd(o.discount)] : null, ['الإجمالي', usd(o.total)]].filter(Boolean).forEach(([k, x], i, a) => { const d = el('div', i === a.length - 1 ? 'tot' : ''); d.append(el('dt', '', k), el('dd', 'en', x)); sum.append(d); });
-      v.append(head, to, tb, sum, el('p', 'hint', 'العملة: دولار أمريكي USD. اللي في الطلب اتضاف لحسابك تلقائي.'));
+      v.append(head, to, tb, sum, el('p', 'hint', 'العملة: دولار أمريكي USD. أُضيف محتوى الطلب إلى حسابك تلقائياً.'));
       const d = $('invDlg'); if (!d.open) d.showModal();
     }
     $('invDlg').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => $('invDlg').close()));
@@ -941,10 +952,10 @@
         const parts = [];
         if (r.data.plan) parts.push('باقة ' + r.data.plan + ' لمدة ' + r.data.days + ' يوم');
         if (r.data.credits) parts.push(r.data.credits + ' كريديت');
-        SirbUI.msg(gm, 'مبروك! اتضافلك ' + parts.join(' و '), 'success');
+        SirbUI.msg(gm, 'تهانينا! أُضيف إليك ' + parts.join(' و '), 'success');
         $('giftCode').value = '';
         await refreshUser(); loadPlans(); loadLedger();
-      } catch (err) { SirbUI.msg(gm, 'تعذر الاتصال، جرب تاني', 'error'); }
+      } catch (err) { SirbUI.msg(gm, 'تعذر الاتصال، حاول مرة أخرى', 'error'); }
       finally { $('giftBtn').disabled = false; }
     });
   });

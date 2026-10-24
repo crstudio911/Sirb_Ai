@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-R6kjt5FwTd5vAw94Q08NLDZsSaGTzg4NsdIfKtECSp0=' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https: https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://www.google.com https://fonts.gstatic.com; media-src 'self' blob: https:; connect-src 'self' https: https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; frame-src https://translate.google.com; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex">
   <title>Sirb_Ai</title>
@@ -86,7 +86,7 @@
           <div class="panel screen">
             <div class="panel-head"><svg class="ic"><use href="#i-image"/></svg><h2>شاشة العرض</h2><span class="tag" id="chatTitle"></span></div>
             <div class="thread" id="thread">
-              <div class="empty" id="emptyState"><svg class="ic xl"><use href="#i-image"/></svg><p>اكتب وصف واضغط إنشاء، والمحادثة هتتحفظ على جهازك</p></div>
+              <div class="empty" id="emptyState"><svg class="ic xl"><use href="#i-image"/></svg><p>اكتب وصفاً واضغط إنشاء، وستُحفظ المحادثة على جهازك</p></div>
             </div>
             <div class="loading-bar" id="loading" role="status" aria-live="polite" hidden><span class="scan"></span><span class="load-text" id="loadText">جاري الإعداد...</span><span class="load-steps" id="loadSteps"><i></i><i></i><i></i><i></i><i></i></span><span class="load-track"><span class="load-fill" id="loadFill"></span></span></div>
           </div>
@@ -102,8 +102,8 @@
           <form class="panel details" id="genForm" novalidate>
             <div class="panel-head"><svg class="ic"><use href="#i-prompt"/></svg><h2>تفاصيل الإنشاء</h2></div>
             <div class="modes" role="radiogroup" aria-label="الوضع">
-              <button type="button" class="mode active" data-mode="normal" role="radio" aria-checked="true"><b>عادي</b><small class="en">FLUX.1 dev</small></button>
-              <button type="button" class="mode" data-mode="pro" role="radio" aria-checked="false"><b class="en">Pro</b><small class="en">FLUX.2 dev · Wan 2.2</small><svg class="ic lock"><use href="#i-lock"/></svg></button>
+              <button type="button" class="mode active" data-mode="normal" role="radio" aria-checked="true"><b>عادي</b><small>صور سريعة</small></button>
+              <button type="button" class="mode" data-mode="pro" role="radio" aria-checked="false"><b class="en">Pro</b><small>جودة أعلى وفيديو</small><svg class="ic lock"><use href="#i-lock"/></svg></button>
             </div>
             <div class="kinds" id="kinds" hidden>
               <button type="button" class="pill active" data-kind="image"><svg class="ic"><use href="#i-image"/></svg>صورة</button>
@@ -118,7 +118,7 @@
               <div class="frames-row">
                 <label class="frame-slot" data-slot="start"><input type="file" accept="image/png,image/jpeg,image/webp" hidden><span class="fs-empty"><svg class="ic"><use href="#i-upload"/></svg><b>صورة البداية</b><small>الفيديو يبدأ منها</small></span></label>
                 <svg class="ic frames-arrow"><use href="#i-arrow"/></svg>
-                <label class="frame-slot" data-slot="end"><input type="file" accept="image/png,image/jpeg,image/webp" hidden><span class="fs-empty"><svg class="ic"><use href="#i-upload"/></svg><b>صورة النهاية</b><small>الفيديو يخلص عندها</small></span></label>
+                <label class="frame-slot" data-slot="end"><input type="file" accept="image/png,image/jpeg,image/webp" hidden><span class="fs-empty"><svg class="ic"><use href="#i-upload"/></svg><b>صورة النهاية</b><small>ينتهي الفيديو عندها</small></span></label>
               </div>
             </div>
             <div class="refs" id="refsBox">
@@ -144,9 +144,9 @@
       <section class="view" data-view="library" hidden>
         <div class="panel">
           <div class="panel-head"><svg class="ic"><use href="#i-image"/></svg><h2>المكتبة</h2><span class="tag" id="libCount"></span></div>
-          <p class="hint">كل صورك ومحادثاتك محفوظة داخل المتصفح على جهازك ده بس.</p>
+          <p class="hint">جميع صورك ومحادثاتك محفوظة داخل المتصفح على هذا الجهاز فقط.</p>
           <div class="grid" id="grid"></div>
-          <div class="empty" id="libraryEmpty"><svg class="ic xl"><use href="#i-image"/></svg><p>لسه معملتش صور</p><a href="#studio" class="btn sm">ابدأ الإنشاء</a></div>
+          <div class="empty" id="libraryEmpty"><svg class="ic xl"><use href="#i-image"/></svg><p>لم تنشئ أي صور بعد</p><a href="#studio" class="btn sm">ابدأ الإنشاء</a></div>
         </div>
       </section>
 
@@ -167,7 +167,7 @@
             <button type="button" class="btn ghost" id="buyPlan"><svg class="ic"><use href="#i-crown"/></svg>اشترك أو جدد Pro</button>
           </div>
           <form class="gift-form" id="giftForm" novalidate>
-            <label class="chat-search"><svg class="ic"><use href="#i-gift"/></svg><input id="giftCode" maxlength="30" placeholder="عندك كود هدية؟ اكتبه هنا" autocomplete="off" dir="ltr"></label>
+            <label class="chat-search"><svg class="ic"><use href="#i-gift"/></svg><input id="giftCode" maxlength="30" placeholder="هل لديك كود هدية؟ اكتبه هنا" autocomplete="off" dir="ltr"></label>
             <button type="submit" class="btn sm ghost" id="giftBtn">استخدام الكود</button>
           </form>
           <p class="msg" id="giftMsg"></p>
@@ -190,7 +190,7 @@
             <div><dt>الاسم</dt><dd data-user-name></dd></div>
             <div><dt>البريد</dt><dd class="en" dir="ltr" id="pEmail"></dd></div>
             <div><dt>الخطة</dt><dd><span class="plan en" data-plan-name>Free</span></dd></div>
-            <div><dt>الاشتراك لحد</dt><dd id="pUntil">-</dd></div>
+            <div><dt>الاشتراك حتى</dt><dd id="pUntil">-</dd></div>
             <div><dt>كود الدعوة</dt><dd><code class="en" dir="ltr" id="pCode"></code></dd></div>
           </dl>
           <div class="row">
@@ -204,7 +204,7 @@
   <dialog class="modal" id="buyDlg" aria-labelledby="buyTitle">
     <div class="modal-head"><svg class="ic"><use href="#i-cart"/></svg><h2 id="buyTitle">الشراء</h2><button type="button" class="icon-btn modal-x" data-close aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button></div>
     <section class="step" data-step="region">
-      <p class="hint">اختار بلدك عشان نوريك طريقة الدفع المناسبة</p>
+      <p class="hint">اختر بلدك لنعرض لك طريقة الدفع المناسبة</p>
       <div class="regions">
         <button type="button" class="region" id="regEg"><img class="flag" src="../img/flag-eg.svg" alt="علم مصر" width="48" height="48"><b>مصر</b><small>الشحن عن طريق <span class="en" id="egName">MC_Ai</span></small></button>
         <button type="button" class="region" id="regWorld"><svg class="ic flag"><use href="#i-globe"/></svg><b>باقي العالم</b><small>الدفع بالدولار</small></button>
@@ -212,7 +212,7 @@
     </section>
     <section class="step" data-step="egypt" hidden>
       <div class="eg-box"><img class="flag big" src="../img/flag-eg.svg" alt="علم مصر" width="72" height="72">
-        <p>عشان تشحن من مصر، ادخل على موقع <b class="en" id="egName2">MC_Ai</b> واشحن من خلالهم.</p>
+        <p>لشحن رصيدك من مصر، انتقل إلى موقع <b class="en" id="egName2">MC_Ai</b> واشحن من خلالهم.</p>
         <a class="btn" id="egLink" href="#" target="_blank" rel="noopener noreferrer"><svg class="ic"><use href="#i-share"/></svg>افتح موقع <span class="en" id="egName3">MC_Ai</span></a>
         <button type="button" class="btn ghost sm" data-back>رجوع</button>
       </div>
@@ -250,7 +250,7 @@
       <div class="done-box">
         <span class="done-ic"><svg class="ic"><use href="#i-check"/></svg></span>
         <h3>تم التأكيد</h3>
-        <p>طلبك اتسجل، وهيتم إرسال الفاتورة بمجرد الموافقة عليها. أول ما يتوافق عليه، اللي طلبته هيتضاف لحسابك تلقائي.</p>
+        <p>سُجل طلبك، وستُرسل الفاتورة بمجرد الموافقة عليها. فور الموافقة على الطلب، سيُضاف محتواه إلى حسابك تلقائياً.</p>
         <p class="tag" id="doneInfo"></p>
         <button type="button" class="btn" data-close>تمام</button>
       </div>
@@ -264,6 +264,7 @@
 
   <script src="../core/config.js"></script>
   <script src="../core/core.js"></script>
+  <script src="../core/lang.js"></script>
   <script src="presets.js"></script>
   <script src="store.js"></script>
   <script src="main.js"></script>

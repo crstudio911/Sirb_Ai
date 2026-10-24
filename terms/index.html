@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-14k0+prcIaaJZdFU1D4fyHuYeNWqaKkWsRc6oy+5QWs='; style-src 'sha256-YJZONlAgXXu2tYPwfrLDYakBTJ0//EQlkxWqI+f1KcE=' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; font-src https://fonts.gstatic.com; img-src 'self' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com https://www.google.com https://fonts.gstatic.com; base-uri 'none'; form-action 'none'; object-src 'none'; script-src 'self' 'sha256-R6kjt5FwTd5vAw94Q08NLDZsSaGTzg4NsdIfKtECSp0=' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; connect-src 'self' https:">
 <meta name="referrer" content="no-referrer">
 <meta name="description" content="شروط الاستخدام وسياسة الخصوصية لمنصة Sirb Ai">
 <title>Sirb Ai — شروط الاستخدام والخصوصية</title>
@@ -42,15 +42,39 @@ body{font-family:var(--font-ar);background:radial-gradient(circle at 10% 0%,var(
 #doc-en ul{margin:8px 0 8px 24px}
 .foot{text-align:center;color:var(--muted);margin-top:28px;font-size:.9rem}
 @media print{.top,.toc{display:none}.doc{border:0}}
+:root{--card-solid:#1E2A3A;--input:rgba(0,229,255,.06);--shadow:0 18px 40px -16px rgba(0,0,0,.5)}[data-theme="light"]{--card-solid:#F4F7FA;--input:rgba(0,102,122,.06);--shadow:0 18px 40px -16px rgba(27,37,51,.25)}
+html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+.actions{align-items:center}
+.lang-pick { position: relative; display: inline-flex; }
+.lang-pick.floating { position: fixed; top: 14px; inset-inline-start: 14px; z-index: 60; }
+.lang-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: 600 13px/1 'Outfit', 'Cairo', sans-serif; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, box-shadow .2s, transform .2s; }
+.lang-btn:hover, .lang-btn[aria-expanded="true"] { border-color: var(--primary); box-shadow: 0 0 0 3px var(--glow); }
+.lang-btn:active { transform: scale(.97); }
+.lang-ic { width: 18px; height: 18px; fill: none; stroke: var(--primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lang-menu { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; width: 240px; max-height: 360px; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 16px; border: 1px solid var(--line); background: var(--card-solid); box-shadow: var(--shadow); z-index: 70; animation: langIn .18s ease-out; }
+.lang-pick.floating .lang-menu { inset-inline-end: auto; inset-inline-start: 0; }
+.lang-menu[hidden] { display: none; }
+@keyframes langIn { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+.lang-search { width: 100%; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--input); color: var(--text); font: 500 13px 'Cairo', 'Outfit', sans-serif; outline: none; }
+.lang-search:focus { border-color: var(--primary); }
+.lang-list { overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.lang-list button { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: 500 14px 'Cairo', 'Outfit', sans-serif; cursor: pointer; text-align: start; }
+.lang-list button[hidden] { display: none; }
+.lang-list button:hover { background: var(--input); }
+.lang-list button[aria-checked="true"] { background: var(--glow); color: var(--primary); }
+.lang-tag { font: 600 11px 'Outfit', sans-serif; color: var(--muted); }
+@media (max-width: 560px) { .lang-btn { padding: 0 10px; } .lang-menu { width: min(240px, calc(100vw - 28px)); } }
+.gt-hidden, .goog-te-banner-frame, iframe.skiptranslate, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-spinner-pos, .VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
+body { top: 0 !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
 </style>
-<script>(function(){'use strict';var d=document.documentElement;var t=null;try{t=localStorage.getItem('sirb-theme')}catch(e){}d.dataset.theme=t==='light'?'light':'dark';var BACK={home:'../index.html',one:'../log/one.html',main:'../main/main.html'};var q=new URLSearchParams(location.search);var from=q.get('from');var target=Object.prototype.hasOwnProperty.call(BACK,from)?BACK[from]:'../log/one.html';var lang=q.get('lang')==='en'?'en':'ar';function setLang(l){lang=l;var ar=l==='ar';d.lang=l;d.dir=ar?'rtl':'ltr';document.getElementById('doc-ar').hidden=!ar;document.getElementById('doc-en').hidden=ar;document.getElementById('langBtn').textContent=ar?'English':'العربية';document.getElementById('backBtn').textContent=ar?'رجوع':'Back';document.getElementById('themeBtn').textContent=ar?'الوضع':'Theme';document.getElementById('title').textContent=ar?'شروط الاستخدام وسياسة الخصوصية':'Terms of Service & Privacy Policy';document.getElementById('sub').textContent=ar?'تاريخ السريان: 22 أكتوبر 2026 — الإصدار 1.0':'Effective Date: October 22, 2026 — Version 1.0';var a=document.getElementById('tocTerms'),b=document.getElementById('tocPrivacy');a.textContent=ar?'شروط الاستخدام':'Terms of Service';b.textContent=ar?'سياسة الخصوصية':'Privacy Policy';a.href='#'+l+'-p1';b.href='#'+l+'-p2';document.title=ar?'Sirb Ai — شروط الاستخدام والخصوصية':'Sirb Ai — Terms & Privacy'}document.addEventListener('DOMContentLoaded',function(){setLang(lang);document.getElementById('backBtn').addEventListener('click',function(){location.replace(target)});document.getElementById('langBtn').addEventListener('click',function(){setLang(lang==='ar'?'en':'ar')});document.getElementById('themeBtn').addEventListener('click',function(){var n=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=n;try{localStorage.setItem('sirb-theme',n)}catch(e){}})})})();</script>
+<script src="terms.js"></script>
 </head>
 <body>
 <header class="top">
 <div class="brand"><img src="../img/logo.png" alt="Sirb Ai">SIRB <span>Ai</span></div>
 <div class="actions">
-<button type="button" class="btn" id="themeBtn">الوضع</button>
-<button type="button" class="btn" id="langBtn">English</button>
+<button type="button" class="btn" id="themeToggle">الوضع</button>
 <button type="button" class="btn primary" id="backBtn">رجوع</button>
 </div>
 </header>
@@ -216,7 +240,7 @@ body{font-family:var(--font-ar);background:radial-gradient(circle at 10% 0%,var(
 <h3>13. التواصل معنا</h3>
 <p>للاستفسارات المتعلقة بالخصوصية أو طلبات البيانات أو الشكاوى، يرجى التواصل مع Sirb من خلال بيانات الاتصال الرسمية المنشورة على موقع Sirb_Ai.</p>
 </article>
-<article class="doc" id="doc-en" lang="en" hidden>
+<article class="doc notranslate" id="doc-en" lang="en" translate="no" hidden>
 <p><strong>Company:</strong> Sirb<br><strong>Platform:</strong> Sirb_Ai<br><strong>Effective Date:</strong> October 22, 2026<br><strong>Document Version:</strong> 1.0</p>
 <h2 class="part" id="en-p1">PART ONE: TERMS OF SERVICE</h2>
 <h3>1. Introduction</h3>
@@ -377,5 +401,6 @@ body{font-family:var(--font-ar);background:radial-gradient(circle at 10% 0%,var(
 </article>
 <p class="foot">Sirb — Sirb_Ai</p>
 </main>
+<script src="../core/lang.js"></script>
 </body>
 </html>

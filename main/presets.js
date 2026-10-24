@@ -54,6 +54,76 @@
     ['كرتون', 'cartoon illustration, bold outlines'],
     ['خطوط', 'line art, clean ink outlines']
   ] };
+
+  const V_CAM = { name: 'حركة الكاميرا', opts: [
+    ['ثابتة', 'static locked-off camera, no camera movement'],
+    ['تقريب بطيء', 'slow push-in dolly toward the subject'],
+    ['ابتعاد', 'slow pull-back dolly out revealing the scene'],
+    ['دوران حول الهدف', 'smooth orbit camera circling around the subject'],
+    ['متابعة', 'tracking shot following the subject'],
+    ['من الأعلى بطائرة مسيّرة', 'aerial drone flyover shot'],
+    ['صعود', 'camera crane rising up'],
+    ['حركة يد', 'handheld camera, natural slight shake'],
+    ['بانوراما', 'slow horizontal pan across the scene']
+  ] };
+  const V_SPEED = { name: 'السرعة', opts: [
+    ['عادية', 'natural real-time motion'],
+    ['تصوير بطيء', 'slow motion, high frame rate'],
+    ['سريعة', 'fast dynamic energetic motion'],
+    ['تايم لابس', 'timelapse, time passing quickly']
+  ] };
+  const V_LOOK = { name: 'الإحساس', opts: [
+    ['سينمائي', 'cinematic film look, anamorphic, color graded'],
+    ['إعلان', 'high-end commercial advertisement look'],
+    ['وثائقي', 'documentary realistic footage'],
+    ['حلم', 'dreamy ethereal soft glow'],
+    ['أكشن', 'intense action movie look'],
+    ['ريترو', 'vintage 16mm film footage, grain'],
+    ['أنمي', 'anime animation style'],
+    ['ثلاثي الأبعاد', '3d animated render, pixar style']
+  ] };
+  const V_TIME = { name: 'وقت المشهد', opts: [
+    ['نهار', 'bright daytime'], ['غروب', 'golden sunset light'], ['ليل', 'night scene with city lights'], ['مطر', 'rain falling, wet reflections'], ['ضباب', 'drifting fog and haze']
+  ] };
+  const V_TRANS = { name: 'التحول', opts: [
+    ['بدون', 'single continuous shot'],
+    ['يتحرك للحياة', 'still scene coming to life with subtle motion'],
+    ['يظهر تدريجياً', 'subject gradually appearing'],
+    ['يتغير الجو', 'atmosphere gradually changing over time']
+  ] };
+  const VCATS = [
+    { id: 'free', name: 'حر', icon: 'free', groups: [V_CAM, V_SPEED, V_LOOK, V_TIME, V_TRANS] },
+    { id: 'personal', name: 'شخصي', icon: 'personal', base: 'video of a person', groups: [
+      { name: 'الحركة', opts: [
+        ['يمشي', 'walking naturally toward the camera'], ['يتحدث', 'talking to the camera with natural gestures'], ['يبتسم', 'turning head and smiling'], ['يرقص', 'dancing'], ['يركض', 'running'], ['شعر يتطاير', 'hair and clothes moving in the wind']
+      ] }, V_CAM, V_SPEED, V_LOOK, V_TIME
+    ] },
+    { id: 'product', name: 'منتج', icon: 'product', base: 'product commercial video', groups: [
+      { name: 'العرض', opts: [
+        ['يدور', 'product slowly rotating 360 degrees on a turntable'], ['معلق', 'product floating and gently spinning in mid air'], ['رذاذ ماء', 'water splash in slow motion around the product'], ['تفكيك', 'parts assembling together'], ['ضوء يمر', 'light sweep gliding across the surface']
+      ] }, V_CAM, V_SPEED, V_LOOK
+    ] },
+    { id: 'landscape', name: 'طبيعة', icon: 'landscape', base: 'nature footage', groups: [
+      { name: 'الحركة', opts: [
+        ['سحب متحركة', 'clouds moving across the sky'], ['موج', 'waves crashing on the shore'], ['أشجار تتمايل', 'trees swaying in the wind'], ['مياه جارية', 'flowing river water'], ['نجوم تدور', 'stars rotating in the night sky']
+      ] }, V_CAM, V_SPEED, V_TIME, V_LOOK
+    ] },
+    { id: 'food', name: 'أكل', icon: 'food', base: 'food commercial video', groups: [
+      { name: 'الحركة', opts: [
+        ['صب', 'sauce or drink being poured'], ['بخار', 'steam rising'], ['تقطيع', 'being sliced'], ['نزول مكونات', 'ingredients falling in slow motion']
+      ] }, V_CAM, V_SPEED, V_LOOK
+    ] },
+    { id: 'animal', name: 'حيوانات', icon: 'animal', base: 'wildlife footage', groups: [
+      { name: 'الحركة', opts: [
+        ['يركض', 'running'], ['يطير', 'flying'], ['يلعب', 'playing'], ['ينظر إلى الكاميرا', 'turning to look at the camera']
+      ] }, V_CAM, V_SPEED, V_TIME
+    ] },
+    { id: 'game', name: 'ألعاب', icon: 'game', base: 'video game cinematic trailer', groups: [
+      { name: 'المشهد', opts: [
+        ['شخصية تتحرك', 'character idle animation and pose'], ['معركة', 'epic battle action'], ['عالم اللعبة', 'flythrough of the game world'], ['ظهور الشعار', 'dramatic title reveal']
+      ] }, V_CAM, V_LOOK
+    ] }
+  ];
   const RATIO_NOTE = 'high quality, sharp focus';
 
   const CATS = [
@@ -61,10 +131,10 @@
     { id: 'personal', name: 'شخصي', icon: 'personal', base: 'portrait photography of a person', groups: [
       { name: 'نوع اللقطة', opts: [
         ['بورتريه وجه', 'headshot portrait'],
-        ['نص الجسم', 'half body shot'],
+        ['نصف الجسم', 'half body shot'],
         ['الجسم كامل', 'full body shot'],
         ['صورة رسمية', 'professional corporate headshot, business attire'],
-        ['صورة شخصية للسوشيال', 'lifestyle social media portrait'],
+        ['صورة شخصية لوسائل التواصل الاجتماعي', 'lifestyle social media portrait'],
         ['أزياء', 'fashion editorial photoshoot']
       ] },
       LIGHT, ANGLE, LENS,
@@ -101,7 +171,7 @@
       ] },
       LIGHT, ANGLE,
       { name: 'العرض', opts: [
-        ['معلق في الهوا', 'product levitating floating in mid air'],
+        ['معلق في الهواء', 'product levitating floating in mid air'],
         ['مع انعكاس', 'glossy reflection on the surface'],
         ['مع ظل ناعم', 'soft natural drop shadow'],
         ['في يد', 'held in a hand'],
@@ -116,7 +186,7 @@
         ['غابة', 'dense forest'], ['شلال', 'waterfall'], ['ثلج', 'snowy landscape']
       ] },
       { name: 'الوقت', opts: [
-        ['شروق', 'at sunrise'], ['ظهر', 'at midday'], ['غروب', 'at sunset'], ['ليل بالنجوم', 'at night with starry sky, milky way']
+        ['شروق', 'at sunrise'], ['ظهر', 'at midday'], ['غروب', 'at sunset'], ['ليل مرصع بالنجوم', 'at night with starry sky, milky way']
       ] },
       { name: 'الطقس', opts: [
         ['صافي', 'clear sky'], ['ضباب', 'misty fog'], ['مطر', 'rainy weather'], ['عاصفة', 'stormy dramatic clouds']
@@ -132,7 +202,7 @@
       ] },
       LIGHT, ANGLE,
       { name: 'لمسات', opts: [
-        ['بخار', 'steam rising'], ['قطرات', 'fresh water droplets'], ['مكونات حوالين', 'scattered fresh ingredients around']
+        ['بخار', 'steam rising'], ['قطرات', 'fresh water droplets'], ['مكونات محيطة', 'scattered fresh ingredients around']
       ] }
     ] },
     { id: 'arch', name: 'معماري', icon: 'arch', base: 'architectural photography', groups: [
@@ -146,7 +216,7 @@
     ] },
     { id: 'animal', name: 'حيوانات', icon: 'animal', base: 'wildlife photography', groups: [
       { name: 'اللقطة', opts: [
-        ['قريبة', 'close-up portrait'], ['في الحركة', 'in motion action shot'], ['في بيئته', 'in its natural habitat'], ['أليف في البيت', 'cute pet at home']
+        ['قريبة', 'close-up portrait'], ['في الحركة', 'in motion action shot'], ['في بيئته', 'in its natural habitat'], ['حيوان أليف في المنزل', 'cute pet at home']
       ] },
       LIGHT, ANGLE, LENS, STYLE
     ] },
@@ -165,11 +235,11 @@
         ['زاهية', 'vibrant saturated colors'], ['باستيل', 'soft pastel palette'], ['داكنة', 'dark muted palette'], ['لون واحد', 'monochrome palette']
       ] },
       { name: 'التكوين', opts: [
-        ['بسيط', 'minimalist composition'], ['مليان تفاصيل', 'intricate highly detailed'], ['متماثل', 'symmetrical composition'], ['خيالي', 'surreal fantasy']
+        ['بسيط', 'minimalist composition'], ['مليء بالتفاصيل', 'intricate highly detailed'], ['متماثل', 'symmetrical composition'], ['خيالي', 'surreal fantasy']
       ] },
       MOOD
     ] }
   ];
 
-  window.SirbPresets = { CATS, NOTE: RATIO_NOTE };
+  window.SirbPresets = { CATS, VCATS, NOTE: RATIO_NOTE, VNOTE: 'smooth natural motion, high quality, consistent' };
 })();
