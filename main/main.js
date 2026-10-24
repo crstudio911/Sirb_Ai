@@ -84,7 +84,7 @@
     const [v, id] = location.hash.slice(1).split('/');
     if (VIEWS.includes(v)) return { view: v, chat: v === 'studio' ? id || null : null };
     try {
-      const s = JSON.parse(localStorage.getItem(VKEY) || 'null');
+      const s = S.get('view');
       if (s && VIEWS.includes(s.view)) return s;
     } catch (e) {}
     return { view: 'studio', chat: null };
@@ -92,6 +92,14 @@
 
   document.addEventListener('DOMContentLoaded', async function () {
     const { session, logout, api, cached } = window.SirbApi;
+    await S.ready;
+    // theme backup: localStorage keeps it fast on load, IndexedDB brings it back if localStorage was cleared
+    (function () {
+      let t = null; try { t = localStorage.getItem('sirb-theme'); } catch (e) {}
+      const k = S.get('theme');
+      if (!t && (k === 'light' || k === 'dark')) { document.documentElement.dataset.theme = k; try { localStorage.setItem('sirb-theme', k); } catch (e) {} }
+      new MutationObserver(() => S.set('theme', document.documentElement.dataset.theme)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    })();
     document.body.classList.add('booting');
     $('shell').hidden = false;
     const early = cached();
@@ -113,14 +121,45 @@
       const w = user.wallet || { total: 0, credits: 0, bonus: 0, grant: 0 };
       $('uCredits').textContent = num(w.total);
       $('useVal').textContent = num(w.total);
-      const renew = w.renew || 0;
-      $('useBar').style.width = renew ? Math.min(100, w.credits / renew * 100) + '%' : '0%';
+      const renew = w.renew || 0, min = w.minCost || 1;
+      $('useBar').style.width = renew ? Math.min(100, w.total / Math.max(renew, w.total, 1) * 100) + '%' : '0%';
       const next = w.nextAt ? new Date(w.nextAt).toLocaleString('ar-EG', { weekday: 'long', hour: 'numeric', minute: '2-digit' }) : '';
-      $('useNote').textContent = 'رصيد متجدد ' + num(w.credits) + ' من ' + num(renew) + ' · رصيد ثابت ' + num(w.bonus) + (next ? '. التجديد الجاي ' + next + ' (كل ' + (w.renewHours || 12) + ' ساعة بيرجع ' + num(renew) + ')، والرصيد الثابت مبيخلصش.' : '');
+      $('useNote').textContent = next
+        ? 'رصيدك خلص. هيتضافلك ' + num(renew) + ' كريديت ' + next + '.'
+        : 'الرصيد بيفضل معاك. لما يوصل ' + num(min) + ' أو أقل، بيتضافلك ' + num(renew) + ' كريديت بعد ' + (w.renewHours || 12) + ' ساعة.';
       $('quota').textContent = 'رصيدك ' + num(w.total);
       try { updateCost(); } catch (e) {}
     }
-    function setTotal(t) { if (typeof t === 'number' && user.wallet) { const diff = t - user.wallet.total; user.wallet.total = t; user.wallet.credits = Math.max(0, user.wallet.credits + diff); usage(); } }
+    function setTotal(t) { if (typeof t === 'number' && user.wallet) { user.wallet.total = t; user.wallet.credits = t; usage(); } }
+    // Live balance: checks quietly every 15s while the tab is visible, right away when the user comes back, pauses when hidden.
+    (function live() {
+      let timer = 0, busy = false, fails = 0, ticks = 0;
+      const plan = () => user.plan;
+      async function tick() {
+        clearTimeout(timer);
+        if (document.hidden) return;
+        if (!busy) {
+          busy = true;
+          try {
+            const r = await api('/wallet', {});
+            if (r.status === 401) { location.replace('../log/one.html'); return; }
+            if (r.data && r.data.ok && r.data.wallet) {
+              fails = 0;
+              if (++ticks % 4 === 1) syncLedger();
+              const old = user.wallet || {};
+              const w = r.data.wallet;
+              if (old.total !== w.total || old.nextAt !== w.nextAt || old.renew !== w.renew) { user.wallet = w; usage(); }
+              if (r.data.plan && r.data.plan !== plan()) { user.plan = r.data.plan; user.proMode = r.data.proMode === true; try { fillUser(); } catch (e) {} }
+            } else fails++;
+          } catch (e) { fails++; }
+          busy = false;
+        }
+        timer = setTimeout(tick, Math.min(120000, 15000 * Math.pow(2, Math.min(fails, 3))) + Math.random() * 3000);
+      }
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); else clearTimeout(timer); });
+      window.addEventListener('focus', tick);
+      timer = setTimeout(tick, 15000);
+    })();
     let PR = {};
     function renderPrices() {
       PR = Object.assign({ image: 2, image_pro: 6, ref: 1, video_sec: 8, invite_bonus: 0 }, user.pricing || {});
@@ -132,20 +171,28 @@
     }
     renderPrices();
     const ACT = { image: 'صورة عادية', image_pro: 'صورة Pro', video: 'فيديو', refund: 'استرجاع', invite: 'مكافأة دعوة', signup: 'هدية الحساب الجديد', renew: 'تجديد الرصيد', renew_plan: 'رصيد الباقة الجديدة', renew_first: 'بداية التجديد', buy_credits: 'شراء كريديت', buy_plan: 'تفعيل باقة', plan_credits: 'كريديت الباقة', gift: 'كود هدية', gift_plan: 'باقة هدية', admin_adjust: 'تعديل من الإدارة', admin_create: 'رصيد من الإدارة' };
-    async function loadLedger() {
+    const owner = () => String(user.email || '').toLowerCase();
+    async function syncLedger() {
       try {
         const r = await api('/ledger', {});
-        if (!r.data || !r.data.ok || !Array.isArray(r.data.items)) return;
-        const box = $('ledger'); box.textContent = '';
-        if (!r.data.items.length) { box.append(el('span', 'hint', 'مفيش حركات لسه')); return; }
-        await stream(r.data.items, it => {
+        if (r.data && r.data.ok && Array.isArray(r.data.items)) await S.ledgerPut(r.data.items, owner());
+      } catch (e) {}
+    }
+    async function loadLedger() {
+      const box = $('ledger');
+      const draw = async () => {
+        const items = await S.ledgerAll(100, owner());
+        box.textContent = '';
+        if (!items.length) { box.append(el('span', 'hint', 'مفيش حركات لسه')); return; }
+        await stream(items, it => {
           const row = el('div');
           const name = ACT[it.action] || it.action;
           const left = el('span', '', name + (it.status === 'refunded' ? ' · اترجع' : it.status === 'held' ? ' · جاري' : ''));
           row.append(left, el('small', '', fmt(it.t)), el('span', it.credits >= 0 ? 'plus' : 'minus', (it.credits > 0 ? '+' : '') + it.credits));
           return row;
         }, f => box.append(f));
-      } catch (e) {}
+      };
+      try { await draw(); await syncLedger(); await draw(); } catch (e) {}
     }
     usage();
     let SHOP = null;
@@ -335,7 +382,7 @@
         a.setAttribute('aria-selected', on ? 'true' : 'false');
         if (a.dataset.view === 'studio') a.href = chatId ? '#studio/' + chatId : '#studio';
       });
-      try { localStorage.setItem(VKEY, JSON.stringify({ view, chat: view === 'studio' ? chatId : null })); } catch (e) {}
+      S.set('view', { view, chat: view === 'studio' ? chatId : null });
       if (view === 'studio') { await renderChats(); await renderThread(); }
       if (view === 'library') await renderLibrary();
       if (view === 'wallet') { loadLedger(); loadOrders(); }
@@ -426,8 +473,8 @@
       STAGES.forEach(([ms, t], i) => stageT.push(setTimeout(() => set(i, t), ms)));
     }
 
-    function jobs() { try { const a = JSON.parse(localStorage.getItem('sirb-jobs') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-    function saveJobs(a) { try { localStorage.setItem('sirb-jobs', JSON.stringify(a.slice(-10))); } catch (e) {} }
+    function jobs() { const a = S.get('jobs'); return Array.isArray(a) ? a : []; }
+    function saveJobs(a) { S.set('jobs', a.slice(-10)); }
 
     let mode = 'normal', kind = 'image', seconds = 5, aspect = '16:9';
     let refs = [];
@@ -803,8 +850,6 @@
     dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
     $('regEg').addEventListener('click', () => {
       step('egypt');
-      toast('ادخل على موقع ' + (SHOP.egypt.name || 'MC_Ai') + ' عشان تشحن من خلالهم', 'info');
-      if (SHOP.egypt.url) window.open(SHOP.egypt.url, '_blank', 'noopener,noreferrer');
     });
     $('regWorld').addEventListener('click', () => { step('world'); renderBuy(); });
     dlg.querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', () => { buy.kind = b.dataset.buy; requote(); renderBuy(); }));
@@ -883,7 +928,6 @@
       const d = $('invDlg'); if (!d.open) d.showModal();
     }
     $('invDlg').querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => $('invDlg').close()));
-    $('invPrint').addEventListener('click', () => { document.body.classList.add('printing'); window.print(); setTimeout(() => document.body.classList.remove('printing'), 500); });
 
     $('giftForm').addEventListener('submit', async e => {
       e.preventDefault();

@@ -7,7 +7,7 @@
   function open() {
     if (dbp) return dbp;
     dbp = new Promise((resolve, reject) => {
-      const r = indexedDB.open(NAME, 1);
+      const r = indexedDB.open(NAME, 2);
       r.onupgradeneeded = () => {
         const db = r.result;
         if (!db.objectStoreNames.contains('chats')) db.createObjectStore('chats', { keyPath: 'id' }).createIndex('updated', 'updated');
@@ -16,6 +16,8 @@
           s.createIndex('chatId', 'chatId');
           s.createIndex('t', 't');
         }
+        if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv', { keyPath: 'k' });
+        if (!db.objectStoreNames.contains('ledger')) db.createObjectStore('ledger', { keyPath: 'id' }).createIndex('t', 't');
       };
       r.onsuccess = () => resolve(r.result);
       r.onerror = () => reject(r.error);
@@ -44,8 +46,45 @@
     return new Blob([out], { type: m[1] });
   }
 
+  // Small settings live in IndexedDB (not localStorage), so clearing localStorage does not remove them.
+  const KV = new Map();
+  const ready = (async () => {
+    try {
+      const all = await tx('kv', 'readonly', s => req(s.getAll()));
+      all.forEach(x => KV.set(x.k, x.v));
+      // one-time move of old localStorage values
+      [['sirb-view', 'view'], ['sirb-jobs', 'jobs'], ['sirb-theme', 'theme']].forEach(([lk, k]) => {
+        if (KV.has(k)) return;
+        let v = null; try { v = localStorage.getItem(lk); } catch (e) {}
+        if (v == null) return;
+        try { v = k === 'theme' ? v : JSON.parse(v); } catch (e) { return; }
+        KV.set(k, v); tx('kv', 'readwrite', s => req(s.put({ k, v }))).catch(() => {});
+      });
+      ['sirb-view', 'sirb-jobs'].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+    } catch (e) {}
+  })();
+
   const Store = {
     uid,
+    ready,
+    get: k => KV.get(k),
+    set(k, v) { KV.set(k, v); return tx('kv', 'readwrite', s => req(s.put({ k, v }))).catch(() => {}); },
+    // Credit history is downloaded from the server and kept here; the server keeps it only a few minutes.
+    async ledgerPut(items, owner) {
+      const ok = (items || []).filter(x => x && typeof x.id === 'string' && x.id).map(x => ({ id: x.id, t: String(x.t || ''), action: String(x.action || ''), credits: Number(x.credits) || 0, balance: Number(x.balance) || 0, status: String(x.status || ''), o: String(owner || '') }));
+      if (!ok.length) return;
+      await tx('ledger', 'readwrite', s => Promise.all(ok.map(x => req(s.put(x)))));
+    },
+    async ledgerAll(limit, owner) {
+      const all = (await tx('ledger', 'readonly', s => req(s.getAll()))).filter(x => (x.o || '') === String(owner || ''));
+      all.sort((a, b) => (a.t < b.t ? 1 : -1));
+      if (all.length > 500) {
+        const old = all.slice(500);
+        await tx('ledger', 'readwrite', s => Promise.all(old.map(x => req(s.delete(x.id)))));
+      }
+      return all.slice(0, limit || 100);
+    },
+    ledgerClear: () => tx('ledger', 'readwrite', s => req(s.clear())),
     async chats() {
       const all = await tx('chats', 'readonly', s => req(s.getAll()));
       return all.sort((a, b) => b.updated - a.updated);
