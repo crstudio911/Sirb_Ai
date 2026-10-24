@@ -784,7 +784,7 @@
       if (!SHOP) return 0;
       if (buy.kind === 'plan') { const p = SHOP.plans.find(x => x.id === buy.plan); return p ? p.price : 0; }
       const c = SHOP.credit;
-      return buy.credits >= c.min && buy.credits % c.step === 0 && buy.credits <= c.max ? Math.round(buy.credits / c.min * c.minPrice * 100) / 100 : 0;
+      return buy.credits >= c.min && buy.credits <= c.max ? Math.round(buy.credits / c.min * c.minPrice * 100) / 100 : 0;
     }
     function renderSum() {
       const sub = subtotal();
@@ -810,7 +810,7 @@
         box.append(b);
       });
       const c = SHOP.credit;
-      $('creditHint').textContent = 'أقل حاجة ' + c.min + ' كريديت بـ ' + usd(c.minPrice) + '، والشراء بمضاعفات ' + c.step;
+      $('creditHint').textContent = 'أقل حاجة ' + c.min + ' كريديت بـ ' + usd(c.minPrice) + '، وتقدر تشتري أي عدد أكبر (مثلاً 51)';
       renderSum();
     }
     async function requote() {
@@ -832,7 +832,7 @@
       buy.credits = buy.credits || SHOP.credit.min;
       buy.code = ''; buy.quote = null;
       $('discCode').value = ''; SirbUI.msg($('discMsg'), ''); SirbUI.msg($('buyMsg'), '');
-      const q = $('creditQty'); q.min = SHOP.credit.min; q.step = SHOP.credit.step; q.max = SHOP.credit.max; q.value = buy.credits;
+      const q = $('creditQty'); q.min = SHOP.credit.min; q.step = 1; q.max = SHOP.credit.max; q.value = buy.credits;
       const chips = $('creditChips'); chips.textContent = '';
       [1, 2, 5, 10, 20].map(m => SHOP.credit.min * m).filter(n => n <= SHOP.credit.max).forEach(n => {
         const b = el('button', 'pill en', n + ''); b.type = 'button';
