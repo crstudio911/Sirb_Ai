@@ -170,6 +170,23 @@
     throw lastErr || new Error('network');
   }
 
+  // تحميل ملف (فيديو) من خادمنا بتصريح موقّع؛ أي سيرفر يقبل التصريح لأن السر واحد.
+  async function file(path, body, opt) {
+    for (const srv of order(opt && opt.srv)) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 120000);
+      try {
+        const res = await fetch(srv + path, {
+          method: 'POST', mode: 'cors', credentials: 'include', cache: 'no-store', referrerPolicy: 'no-referrer',
+          headers: { 'Content-Type': 'application/json', 'X-Sirb': '1' }, body: JSON.stringify(body || {}), signal: ctrl.signal
+        });
+        if (res.ok && !/json/.test(res.headers.get('content-type') || '')) return await res.blob();
+        if (res.status === 401 || res.status === 400 || res.status === 410) return null;
+      } catch (e) { log(path + ' -> network error'); } finally { clearTimeout(timer); }
+    }
+    return null;
+  }
+
   const KEY = 'sirb-user';
   function cached() {
     try { const u = JSON.parse(sessionStorage.getItem(KEY) || 'null'); return u && typeof u.name === 'string' ? u : null; } catch (e) { return null; }
@@ -202,7 +219,7 @@
     document.dispatchEvent(new CustomEvent('sirb:session', { detail: u }));
   }
 
-  window.SirbApi = Object.freeze({ api, initTheme, session, logout, cached, configured: () => SERVERS.length > 0, servers: () => SERVERS.slice() });
+  window.SirbApi = Object.freeze({ api, file, initTheme, session, logout, cached, configured: () => SERVERS.length > 0, servers: () => SERVERS.slice() });
 
   document.addEventListener('DOMContentLoaded', function () {
     initTheme();

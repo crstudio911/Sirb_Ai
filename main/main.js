@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  const VIEWS = ['studio', 'library', 'wallet', 'profile'];
+  var tplActive = null;  // يُعرَّف مبكراً لأن حساب التكلفة يستخدمه
+  const VIEWS = ['studio', 'library', 'wallet', 'templates', 'profile'];
   const VKEY = 'sirb-view';
   const $ = id => document.getElementById(id);
   const ERR = {
@@ -162,15 +163,15 @@
     })();
     let PR = {};
     function renderPrices() {
-      PR = Object.assign({ image: 2, image_pro: 6, ref: 1, video_sec: 8, invite_bonus: 0 }, user.pricing || {});
+      PR = Object.assign({ image: 2, image_pro: 6, ref: 1, video_sec: 8, invite_bonus: 0, tpl_image: 4, tpl_image_pro: 8 }, user.pricing || {});
       const pl = $('priceList'); pl.textContent = '';
-      [['صورة عادية', PR.image], ['صورة Pro', PR.image_pro], ['كل صورة مرجعية', PR.ref], ['كل ثانية فيديو', PR.video_sec], ['مكافأة كل دعوة', PR.invite_bonus]].forEach(([k, v]) => {
+      [['صورة عادية', PR.image], ['صورة Pro', PR.image_pro], ['صورة بقالب جاهز', PR.tpl_image], ['صورة Pro بقالب جاهز', PR.tpl_image_pro], ['كل صورة مرجعية', PR.ref], ['كل ثانية فيديو', PR.video_sec], ['مكافأة كل دعوة', PR.invite_bonus]].forEach(([k, v]) => {
         if (!v) return;
         const d = el('div'); d.append(el('span', '', k), el('b', '', String(v))); pl.append(d);
       });
     }
     renderPrices();
-    const ACT = { image: 'صورة عادية', image_pro: 'صورة Pro', video: 'فيديو', refund: 'استرجاع', invite: 'مكافأة دعوة', signup: 'هدية الحساب الجديد', renew: 'تجديد الرصيد', renew_plan: 'رصيد الباقة الجديدة', renew_first: 'بداية التجديد', buy_credits: 'شراء كريديت', buy_plan: 'تفعيل باقة', plan_credits: 'كريديت الباقة', gift: 'كود هدية', gift_plan: 'باقة هدية', admin_adjust: 'تعديل من الإدارة', admin_create: 'رصيد من الإدارة' };
+    const ACT = { image: 'صورة عادية', image_pro: 'صورة Pro', tpl_image: 'صورة بقالب', tpl_image_pro: 'صورة Pro بقالب', video: 'فيديو', refund: 'استرجاع', invite: 'مكافأة دعوة', signup: 'هدية الحساب الجديد', renew: 'تجديد الرصيد', renew_plan: 'رصيد الباقة الجديدة', renew_first: 'بداية التجديد', buy_credits: 'شراء كريديت', buy_plan: 'تفعيل باقة', plan_credits: 'كريديت الباقة', gift: 'كود هدية', gift_plan: 'باقة هدية', admin_adjust: 'تعديل من الإدارة', admin_create: 'رصيد من الإدارة' };
     const owner = () => String(user.email || '').toLowerCase();
     async function syncLedger() {
       try {
@@ -400,7 +401,7 @@
       copy(inviteUrl(), 'تم نسخ رابط الدعوة');
     });
     $('logoutBtn').addEventListener('click', async () => { await logout(); location.replace('../log/one.html'); });
-    $('newChat').addEventListener('click', () => { chatId = null; location.hash = '#studio'; show(); $('prompt').focus(); });
+    $('newChat').addEventListener('click', () => { if (typeof clearTpl === 'function') clearTpl(); chatId = null; location.hash = '#studio'; show(); $('prompt').focus(); });
 
     const prompt = $('prompt');
     prompt.addEventListener('input', () => { $('count').textContent = prompt.value.length + ' / 1000'; });
@@ -495,7 +496,7 @@
     const frameCount = () => (frames.start ? 1 : 0) + (frames.end ? 1 : 0);
 
     function updateCost() {
-      const c = kind === 'video' ? seconds * PR.video_sec + frameCount() * PR.ref : (mode === 'pro' ? PR.image_pro : PR.image) + refs.length * PR.ref;
+      const c = kind === 'video' ? seconds * PR.video_sec + frameCount() * PR.ref : tplActive ? (mode === 'pro' ? PR.tpl_image_pro : PR.tpl_image) + Math.max(0, refs.length - tplActive.tplRef) * PR.ref : (mode === 'pro' ? PR.image_pro : PR.image) + refs.length * PR.ref;
       $('costVal').textContent = String(c);
       const w = user.wallet ? user.wallet.total : 0;
       $('genBtn').classList.toggle('short', w < c);
@@ -635,9 +636,10 @@
       if (b.dataset.mode === 'pro' && !canPro()) { toast(ERR.pro_required, 'warn'); location.hash = '#wallet'; return; }
       mode = b.dataset.mode;
       if (mode === 'normal') kind = 'image';
+      if (tplActive) clearTpl();
       syncUi();
     }));
-    document.querySelectorAll('#kinds .pill').forEach(b => b.addEventListener('click', () => { kind = b.dataset.kind; syncUi(); }));
+    document.querySelectorAll('#kinds .pill').forEach(b => b.addEventListener('click', () => { kind = b.dataset.kind; if (tplActive && kind === 'video') clearTpl(); syncUi(); }));
     document.querySelectorAll('#aspects .pill').forEach(b => b.addEventListener('click', () => { aspect = b.dataset.a; document.querySelectorAll('#aspects .pill').forEach(x => x.classList.toggle('active', x === b)); }));
     renderDurs();
     syncUi();
@@ -672,10 +674,13 @@
       try {
         while (jobs().length) {
           for (const j of jobs()) {
-            let r;
-            try { r = await api('/video-status', j.end ? { job: j.job, end: j.end } : { job: j.job }, { srv: j.srv }); } catch (e) { continue; }
-            if (r.status === 401) return;
-            const d = r.data || {};
+            let r, d;
+            if (j.media) { r = { srv: j.srv }; d = { ok: true, state: 'done', media: j.media }; }
+            else {
+              try { r = await api('/video-status', j.end ? { job: j.job, end: j.end } : { job: j.job }, { srv: j.srv }); } catch (e) { continue; }
+              if (r.status === 401) return;
+              d = r.data || {};
+            }
             if (!d.ok) { if (r.status === 400) saveJobs(jobs().filter(x => x.id !== j.id)); continue; }
             if (d.state === 'running') {
               if (typeof d.job === 'string') saveJobs(jobs().map(x => x.id === j.id ? Object.assign(x, { job: d.job, part: d.part, phase: d.phase, srv: r.srv || x.srv }) : x));
@@ -686,14 +691,17 @@
             saveJobs(jobs().filter(x => x.id !== j.id));
             if (d.state === 'failed') {
               if (typeof d.total === 'number') setTotal(d.total);
-              toast('تعذر إنشاء الفيديو، وأُعيد الكريديت إليك', 'err'); LOG('video job failed', d.reason || '');
-            } else if (d.state === 'done' && typeof d.url === 'string') {
+              toast('تعذر إنشاء الفيديو، وأُعيد الكريديت إليك', 'err'); LOG('video job failed');
+            } else if (d.state === 'done' && typeof d.media === 'string') {
               let blob = null;
-              try { const v = await fetch(d.url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' }); if (v.ok) blob = await v.blob(); } catch (e) {}
+              for (let t = 0; t < 3 && !blob; t++) blob = await window.SirbApi.file('/media', { media: d.media }, { srv: r.srv || j.srv });
+              // الفيديو جاهز بس التحميل فشل: نحتفظ بالتصريح ونحاول تاني في الدورة الجاية (صالح 6 ساعات).
+              if (!blob && (j.tries || 0) < 20) { saveJobs(jobs().concat([Object.assign(j, { media: d.media, tries: (j.tries || 0) + 1, srv: r.srv || j.srv })])); continue; }
+              if (!blob) { toast('تعذر تحميل الفيديو من الخادم', 'err'); continue; }
               let cid = j.chatId;
               try {
                 if (!cid || !(await S.chat(cid))) cid = (await S.createChat(j.prompt)).id;
-                await S.addVideo(cid, blob, d.url, { prompt: j.prompt, style: j.style, styleName: j.styleName, model: '', seconds: j.seconds, refs: j.refs });
+                await S.addVideo(cid, blob, '', { prompt: j.prompt, style: j.style, styleName: j.styleName, model: '', seconds: j.seconds, refs: j.refs });
                 await S.touchChat(cid);
               } catch (e) { toast(ERR.storage, 'err'); LOG('save video failed', e); }
               toast('الفيديو جاهز ومحفوظ على جهازك', 'ok');
@@ -707,6 +715,150 @@
       } finally { polling = false; }
     }
     pollJobs();
+
+    // ===== القوالب الجاهزة =====
+    const TPLS = Array.isArray(window.SIRB_TEMPLATES) ? window.SIRB_TEMPLATES : [];
+    tplActive = null;   // { name, extra } أثناء الإنشاء بقالب
+    let tplCur = null, tplVals = {}, tplPhoto = null;
+    const tplImgCache = {};
+    async function tplBlob(t) {
+      if (tplImgCache[t.id]) return tplImgCache[t.id];
+      const r = await fetch(t.img, { cache: 'force-cache' });
+      if (!r.ok) throw new Error('tpl_img');
+      const b = await r.blob();
+      const blob = /^image\/(png|jpeg|webp)$/.test(b.type) ? b : new Blob([b], { type: 'image/jpeg' });
+      tplImgCache[t.id] = blob; return blob;
+    }
+    const tplRefsCount = () => (tplPhoto && canPro() ? 2 : 1);  // Free: صورة واحدة فقط
+    function tplCost() {
+      const pro = canPro();
+      const c = (pro ? PR.tpl_image_pro : PR.tpl_image) + (tplPhoto ? PR.ref : 0);  // صورة القالب مشمولة في السعر
+      $('tplCost').textContent = String(c);
+      $('tplNote').textContent = pro ? (tplPhoto ? 'جودة Pro: صورة القالب + صورة منتجك' : 'جودة Pro مع صورة القالب مرجعاً') : (tplPhoto ? 'صورة منتجك مع تقنية القالب' : 'صورة القالب مرجعاً');
+      return { c, pro };
+    }
+    function renderTplGrid() {
+      const g = $('tplGrid'); g.textContent = '';
+      $('tplCount').textContent = TPLS.length + ' قالب';
+      TPLS.forEach(t => {
+        const b = el('button', 'tpl-card rise'); b.type = 'button';
+        const im = el('img'); im.src = t.img; im.alt = t.name; im.loading = 'lazy'; im.width = 512; im.height = 512;
+        const tx = el('span', 'tpl-txt');
+        tx.append(el('small', 'tag', t.tag || ''), el('b', '', t.name), el('span', '', t.desc));
+        b.append(im, tx);
+        b.addEventListener('click', () => openTpl(t));
+        g.append(b);
+      });
+    }
+    function openTpl(t) {
+      tplCur = t; tplVals = {}; tplPhoto = null;
+      $('tplHome').hidden = true; $('tplEdit').hidden = false;
+      $('tplName').textContent = t.name; $('tplTag').textContent = t.tag || '';
+      $('tplImg').src = t.img; $('tplImg').alt = t.name; $('tplDesc').textContent = t.desc;
+      $('tplPrompt').value = ''; SirbUI.msg($('tplMsg'), '');
+      const box = $('tplFields'); box.textContent = '';
+      t.fields.forEach(f => {
+        const w = el('div', 'field tpl-field');
+        w.append(el('span', 'opt-name', f.label));
+        if (f.type === 'text') {
+          const i = el('input'); i.maxLength = f.max || 60; i.placeholder = f.ph || ''; i.dir = 'auto'; i.autocomplete = 'off';
+          i.addEventListener('input', () => { tplVals[f.key] = i.value; });
+          w.append(i);
+        } else if (f.type === 'palette' || f.type === 'choice') {
+          const row = el('div', 'styles');
+          f.opts.forEach((o, k) => {
+            const b = el('button', 'pill' + (f.type === 'palette' ? ' sw' : '') + (k === 0 ? ' active' : '')); b.type = 'button';
+            if (f.type === 'palette') { const d = el('span', 'sw-dots'); o[1].forEach(c => { const i = el('i'); i.style.background = c; d.append(i); }); b.append(d); }
+            b.append(document.createTextNode(o[0]));
+            b.addEventListener('click', () => { tplVals[f.key] = k; row.querySelectorAll('.pill').forEach(x => x.classList.toggle('active', x === b)); });
+            row.append(b);
+          });
+          tplVals[f.key] = 0; w.append(row);
+        } else if (f.type === 'photo') {
+          const lab = el('label', 'ref-add tpl-photo'); lab.title = f.hint || '';
+          const inp = el('input'); inp.type = 'file'; inp.accept = 'image/png,image/jpeg,image/webp'; inp.hidden = true;
+          const paint = () => {
+            lab.querySelectorAll('img,.x').forEach(n => n.remove());
+            lab.classList.toggle('filled', !!tplPhoto);
+            if (tplPhoto) {
+              const im = el('img'); im.src = tplPhoto.thumb; im.alt = f.label;
+              const x = el('button', 'x'); x.type = 'button'; x.setAttribute('aria-label', 'إزالة'); x.append(svg('x'));
+              x.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); tplPhoto = null; paint(); });
+              lab.append(im, x);
+            }
+            tplCost();
+          };
+          inp.addEventListener('change', async () => {
+            const f0 = inp.files[0]; inp.value = '';
+            if (!f0 || !okBlob(f0)) return;
+            try { tplPhoto = { blob: f0, thumb: await shrink(f0, 160, .75) }; } catch (e) { toast('تعذرت قراءة هذه الصورة', 'err'); }
+            paint();
+          });
+          lab.append(svg('upload'), el('span', '', 'رفع'), inp);
+          w.append(lab, el('small', 'hint', f.hint || ''));
+        }
+        box.append(w);
+      });
+      tplCost();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function closeTpl() { tplCur = null; tplPhoto = null; $('tplEdit').hidden = true; $('tplHome').hidden = false; }
+    $('tplBack').addEventListener('click', closeTpl);
+    // يبني التعليمات النهائية بذكاء: تقنية القالب + اختيارات المستخدم + طريقة استخدام الصور المرجعية
+    function tplCompose(t, pro, withPhoto, own) {
+      const parts = [], seen = [];
+      const subj = String(tplVals.item || '').trim();
+      const clean = v => String(v || '').replace(/["\u201C\u201D]/g, "'").replace(/[,\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (withPhoto && pro) parts.push('use image 1 only as the layout, technique and style reference and place the exact product from image 2 into it keeping the product identity, shape, logo and colors unchanged');
+      else if (withPhoto) parts.push('keep the product from the reference photo exactly the same and restyle the whole scene around it');
+      else parts.push('use the reference image ONLY for its composition, technique, lighting and design style; do NOT copy its product or objects' + (subj ? ', the subject must be ' + subj.replace(/["\n,]+/g, ' ') + ' instead' : ''));
+      parts.push(t.base);
+      t.fields.forEach(f => {
+        const v = tplVals[f.key];
+        if (f.type === 'text') { const c = clean(v); if (c) { parts.push(f.tpl.replace('{v}', c)); seen.push(c); } }
+        else if ((f.type === 'palette' || f.type === 'choice') && f.opts[v]) parts.push(f.opts[v][2] || f.opts[v][1]);
+      });
+      if (own) parts.push('IMPORTANT the user custom request has top priority over everything above and may replace the product, the focus subject, the written text, colors, layout or any detail, follow it exactly: ' + clean(own).slice(0, 300));
+      if (!t.fields.some(f => f.text && clean(tplVals[f.key]))) parts.push('no text, no letters, no watermark');
+      return parts.join(', ').replace(/,\s*,/g, ',').slice(0, 1450);
+    }
+    function tplSay(t) {
+      const name = String(tplVals.item || '').trim();
+      const own = $('tplPrompt').value.trim();
+      const base = t.say && name ? t.say.replace('{item}', name) : t.name;
+      return (own ? base + '. ' + own : base).slice(0, 1000);
+    }
+    $('tplForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const t = tplCur; if (!t) return;
+      if (busy) { SirbUI.msg($('tplMsg'), 'يوجد طلب قيد التنفيذ، انتظر حتى ينتهي', 'error'); return; }
+      const { c, pro } = tplCost();
+      if (user.wallet && user.wallet.total < c) { SirbUI.msg($('tplMsg'), ERR.no_credits + ' (يتطلب ' + c + '، لديك ' + user.wallet.total + ')', 'error'); return; }
+      $('tplGo').disabled = true; SirbUI.msg($('tplMsg'), 'جاري تجهيز القالب...');
+      try {
+        const list = [];
+        if (!tplPhoto || pro) list.push(await tplBlob(t));
+        if (tplPhoto) list.push(tplPhoto.blob);
+        mode = pro ? 'pro' : 'normal'; kind = 'image';
+        refs = [];
+        for (const b of list) refs.push({ blob: b, data: await shrink(b, pro ? 512 : 1024, .9), thumb: await shrink(b, 120, .7) });
+        syncUi();
+        tplActive = { name: t.name, tplRef: (!tplPhoto || pro) ? 1 : 0, extra: tplCompose(t, pro, !!tplPhoto, $('tplPrompt').value.trim()) };
+        $('tplChipName').textContent = t.name; $('tplChip').hidden = false;
+        prompt.value = tplSay(t); prompt.dispatchEvent(new Event('input'));
+        SirbUI.msg($('tplMsg'), '');
+        chatId = null; location.hash = '#studio';
+        await show();
+        await new Promise(r => setTimeout(r, 60));
+        $('genForm').requestSubmit();
+      } catch (err) {
+        LOG('template', err);
+        SirbUI.msg($('tplMsg'), 'تعذر تحميل صورة القالب، تحقق من الاتصال وحاول مرة أخرى', 'error');
+      } finally { $('tplGo').disabled = false; }
+    });
+    function clearTpl() { tplActive = null; $('tplChip').hidden = true; }
+    $('tplChipX').addEventListener('click', () => { clearTpl(); refs = []; renderRefs(); });
+    renderTplGrid();
 
     let busy = false;
     $('genForm').addEventListener('submit', async e => {
@@ -722,7 +874,8 @@
       SirbUI.msg(msg, '');
       $('genBtn').disabled = true; $('loading').hidden = false; stages(true);
       const ex = extra();
-      const style = ex.text, styleName = ex.names;
+      const style = tplActive ? [tplActive.extra, ex.text].filter(Boolean).join(', ').slice(0, 1500) : ex.text;
+      const styleName = tplActive ? ['قالب: ' + tplActive.name, ex.names].filter(Boolean).join(' · ') : ex.names;
       const history = await historyOf(chatId);
       try {
         if (kind === 'video') {
@@ -730,7 +883,7 @@
           const r = await api('/video', { prompt: text, extra: style, start: frames.start ? frames.start.data : '', end: frames.end ? frames.end.data : '', seconds, aspect, history });
           if (r.status === 401) { location.replace('../log/one.html'); return; }
           if (!r.data || !r.data.ok || typeof r.data.job !== 'string') {
-            if (r.data && r.data.reason) LOG('/video ' + (r.data.error || '') + ' | ' + r.data.reason);
+            if (r.data && r.data.error) LOG('/video ' + r.data.error);
             if (r.data && typeof r.data.total === 'number') setTotal(r.data.total);
             if (r.data && r.data.wallet) { user.wallet = r.data.wallet; usage(); }
             throw new Error(r.status === 413 ? 'size' : (r.data && r.data.error) || 'ai_failed');
@@ -749,10 +902,10 @@
         }
         const sentRefs = refs.map(r => r.data);
         const thumbs = refs.map(r => r.thumb);
-        const r = await api('/generate', { prompt: text, extra: style, mode, refs: sentRefs, history });
+        const r = await api('/generate', { prompt: text, extra: style, mode, refs: sentRefs, history, tpl: tplActive ? 1 : 0, tplRef: tplActive ? tplActive.tplRef : 0 });
         if (r.status === 401) { location.replace('../log/one.html'); return; }
         if (!r.data || !r.data.ok || typeof r.data.image !== 'string' || !r.data.image.startsWith('data:image/')) {
-          if (r.data && r.data.reason) LOG('/generate ' + (r.data.error || '') + ' | ' + r.data.reason);
+          if (r.data && r.data.error) LOG('/generate ' + r.data.error);
           if (r.data && typeof r.data.total === 'number') setTotal(r.data.total);
           if (r.data && r.data.wallet) { user.wallet = r.data.wallet; usage(); }
           throw new Error(r.status === 413 ? 'size' : (r.data && r.data.error) || 'ai_failed');
@@ -765,7 +918,7 @@
         } catch (err) { throw new Error('storage'); }
         if (r.data.wallet) { user.wallet = r.data.wallet; usage(); }
         SirbUI.msg(msg, 'أُنشئت الصورة وحُفظت على جهازك', 'success');
-        refs = []; renderRefs();
+        refs = []; renderRefs(); clearTpl();
         if (id !== chatId) { chatId = id; location.hash = '#studio/' + id; }
         else { await renderChats(); await renderThread(); }
       } catch (err) {

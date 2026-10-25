@@ -111,10 +111,26 @@
     });
     menu.append(search, list);
     wrap.append(btn, menu);
-    function open() { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); search.value = ''; search.dispatchEvent(new Event('input')); setTimeout(() => search.focus(), 30); }
+    // القائمة تُعرض فوق كل عناصر الصفحة (مفصولة عن الشريط) حتى لا تختفي خلف الأقسام على الهاتف.
+    menu.classList.add('notranslate'); menu.setAttribute('translate', 'no');
+    document.body.append(menu);
+    function placeMenu() {
+      const r = btn.getBoundingClientRect(), vw = innerWidth, vh = innerHeight, gap = 8, pad = 12;
+      const w = Math.min(260, vw - pad * 2);
+      let left = r.left + r.width / 2 - w / 2;
+      left = Math.max(pad, Math.min(left, vw - w - pad));
+      const below = vh - r.bottom - gap - pad, above = r.top - gap - pad;
+      const up = below < 220 && above > below;
+      const h = Math.max(160, Math.min(380, up ? above : below));
+      menu.style.width = w + 'px'; menu.style.left = left + 'px'; menu.style.maxHeight = h + 'px';
+      menu.style.top = up ? Math.max(pad, r.top - gap - h) + 'px' : (r.bottom + gap) + 'px';
+    }
+    function open() { placeMenu(); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); search.value = ''; search.dispatchEvent(new Event('input')); setTimeout(() => search.focus({ preventScroll: true }), 30); }
     function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
     btn.addEventListener('click', e => { e.stopPropagation(); menu.hidden ? open() : close(); });
-    document.addEventListener('click', e => { if (!wrap.contains(e.target)) close(); });
+    document.addEventListener('click', e => { if (!wrap.contains(e.target) && !menu.contains(e.target)) close(); });
+    addEventListener('resize', () => { if (!menu.hidden) placeMenu(); });
+    addEventListener('scroll', () => { if (!menu.hidden) placeMenu(); }, { passive: true });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });
 
     const theme = document.getElementById('themeToggle');

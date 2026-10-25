@@ -337,3 +337,42 @@ img.flag.big { width: 120px; height: 80px; }
 .inv-table th, .inv-table td { padding: 8px; border-bottom: 1px solid var(--line); text-align: start; }
 .inv-table th { color: var(--muted); font-weight: 700; }
 .btn[hidden], .icon-btn[hidden], .chip-btn[hidden] { display: none !important; }
+
+/* ===== القوالب الجاهزة (6.10.0) ===== */
+.tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.tpl-card { display: flex; flex-direction: column; padding: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--card-solid); color: var(--text); text-align: start; cursor: pointer; font: inherit; transition: transform .25s, border-color .25s, box-shadow .25s; }
+.tpl-card:hover, .tpl-card:focus-visible { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 10px 30px var(--glow); outline: none; }
+.tpl-card img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; display: block; }
+.tpl-txt { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; }
+.tpl-txt .tag { align-self: flex-start; }
+.tpl-txt b { font-size: 1rem; }
+.tpl-txt span { color: var(--muted); font-size: .85rem; line-height: 1.6; }
+.tpl-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 18px; align-items: start; }
+.tpl-cover { margin: 0; position: sticky; top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.tpl-cover img { width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); display: block; }
+.tpl-cover figcaption { color: var(--muted); font-size: .88rem; line-height: 1.7; }
+.tpl-form, .tpl-fields { display: flex; flex-direction: column; gap: 14px; }
+.tpl-field input { width: 100%; height: 42px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card-solid); color: var(--text); font: 500 .95rem var(--font-ar); outline: none; }
+.tpl-field input:focus { border-color: var(--primary); }
+.tpl-field .styles { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill.sw { display: inline-flex; align-items: center; gap: 8px; }
+.sw-dots { display: inline-flex; }
+.sw-dots i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--card-solid); margin-inline-start: -4px; }
+.sw-dots i:first-child { margin-inline-start: 0; }
+.tpl-photo { cursor: pointer; width: 84px; height: 84px; display: grid; place-items: center; gap: 2px; color: var(--muted); font-size: .8rem; }
+.tpl-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tpl-photo.filled > .ic, .tpl-photo.filled > span { visibility: hidden; }
+.tpl-photo .x { position: absolute; top: 4px; inset-inline-end: 4px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .6); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.tpl-photo .x .ic { width: 14px; height: 14px; }
+.tpl-cost { justify-content: flex-start; }
+.tpl-chip { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--primary); background: var(--glow); color: var(--text); font-size: .9rem; }
+.tpl-chip > .ic { color: var(--primary); }
+.tpl-chip .icon-btn { margin-inline-start: auto; width: 30px; height: 30px; }
+.tpl-chip[hidden], .tpl-edit[hidden], .tpl-home[hidden] { display: none; }
+@media (max-width: 760px) { .tpl-body { grid-template-columns: 1fr; } .tpl-cover { position: static; } .tpl-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; } }
+.tpl-form textarea { width: 100%; resize: vertical; min-height: 90px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card-solid); color: var(--text); font: 400 .95rem var(--font-ar); line-height: 1.7; outline: none; }
+.tpl-form textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--glow); }
+.cost.tpl-cost { align-self: stretch; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 12px 14px; }
+.cost.tpl-cost .ic { width: 22px; height: 22px; }
+.cost.tpl-cost strong { font-size: 1.4rem; }
+.cost.tpl-cost .cost-note { flex-basis: 100%; }
