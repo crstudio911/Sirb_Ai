@@ -1,6 +1,6 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:Cairo,Outfit,sans-serif;background:#0F172A;color:#E6F7FF;display:grid;place-items:center;overflow:hidden;padding:24px}
+body{font-family:Cairo,Outfit,sans-serif;background:#0F172A;color:#E6F7FF;display:grid;place-items:center;overflow-x:hidden;padding:24px}
 .bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(600px 400px at 80% 10%,rgba(0,229,255,.18),transparent 60%),radial-gradient(500px 400px at 10% 90%,rgba(0,229,255,.10),transparent 60%),#0F172A}
 .bg:after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(230,247,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(230,247,255,.04) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(circle at center,#000 30%,transparent 75%)}
 .card{width:100%;max-width:440px;text-align:center;padding:44px 32px;border-radius:24px;background:rgba(15,23,42,.6);border:1px solid rgba(0,229,255,.18);backdrop-filter:blur(16px);box-shadow:0 20px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.02) inset;animation:in .6s ease both}
@@ -30,3 +30,48 @@ a.back{display:inline-block;margin-top:18px;color:#00E5FF;font-size:14px;text-de
 @keyframes mv{from{transform:translateX(250%)}to{transform:translateX(-150%)}}
 @keyframes dt{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+form[hidden]{display:none}
+button:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+button.ghost{background:transparent;color:#00E5FF;border:1px solid rgba(0,229,255,.35)}
+.note{margin-top:16px;min-height:1.4em;font-size:14px;font-weight:600;color:rgba(230,247,255,.75)}
+.note.err{color:#FF5A6E}
+.note.ok{color:#2EE6A6}
+.card.wide{max-width:480px}
+.steps{list-style:none;display:flex;gap:6px;justify-content:center;margin:6px 0 14px;padding:0;counter-reset:s}
+.steps li{counter-increment:s;font-size:12px;color:rgba(230,247,255,.45);display:flex;flex-direction:column;align-items:center;gap:4px;min-width:62px}
+.steps li:before{content:counter(s);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(0,229,255,.25);font-family:Outfit,sans-serif;font-weight:700}
+.steps li.on{color:#00E5FF}.steps li.on:before{background:#00E5FF;color:#0F172A;border-color:#00E5FF}
+.steps li.done{color:#2EE6A6}.steps li.done:before{content:"✓";border-color:#2EE6A6;color:#2EE6A6}
+input.rtl{direction:rtl;text-align:right}
+input[type=month],input[type=date]{color-scheme:dark}
+.hint{font-size:12.5px;color:rgba(230,247,255,.55);line-height:1.7}
+#back{margin-top:16px;width:100%}
+:root{--primary:#00E5FF;--card:rgba(30,42,58,.72);--card-solid:#1E2A3A;--text:#E6F7FF;--muted:rgba(230,247,255,.62);--line:rgba(0,229,255,.16);--input:rgba(15,23,42,.65);--glow:rgba(0,229,255,.28);--shadow:0 24px 60px rgba(0,0,0,.35)}
+.lang-pick { position: relative; display: inline-flex; }
+.lang-pick.floating { position: fixed; top: 14px; inset-inline-start: 14px; z-index: 60; }
+.lang-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: 600 13px/1 'Outfit', 'Cairo', sans-serif; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, box-shadow .2s, transform .2s; }
+.lang-btn:hover, .lang-btn[aria-expanded="true"] { border-color: var(--primary); box-shadow: 0 0 0 3px var(--glow); }
+.lang-btn:active { transform: scale(.97); }
+.lang-ic { width: 18px; height: 18px; fill: none; stroke: var(--primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lang-menu { position: fixed; top: 60px; left: 12px; width: 240px; max-height: 360px; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 16px; border: 1px solid var(--line); background: var(--card-solid); box-shadow: var(--shadow); z-index: 2147483000; animation: langIn .18s ease-out; }
+.lang-menu[hidden] { display: none; }
+@keyframes langIn { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+.lang-search { width: 100%; height: 36px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--input); color: var(--text); font: 500 13px 'Cairo', 'Outfit', sans-serif; outline: none; }
+.lang-search:focus { border-color: var(--primary); }
+.lang-list { overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 2px; }
+.lang-list button { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: 500 14px 'Cairo', 'Outfit', sans-serif; cursor: pointer; text-align: start; }
+.lang-list button[hidden] { display: none; }
+.lang-list button:hover { background: var(--input); }
+.lang-list button[aria-checked="true"] { background: var(--glow); color: var(--primary); }
+.lang-tag { font: 600 11px 'Outfit', sans-serif; color: var(--muted); }
+@media (max-width: 560px) { .lang-btn { padding: 0 10px; } }
+/* إخفاء شريط وأدوات Google Translate */
+.gt-hidden, .goog-te-banner-frame, iframe.skiptranslate, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-spinner-pos, .VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
+body { top: 0 !important; }
+font[style] { background: none !important; box-shadow: none !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
+.lang-pick.floating .lang-btn{width:auto;padding:0 12px}
+.lang-pick button,.lang-menu button{transform:none!important;box-shadow:none}
+.lang-list button{background:transparent;color:var(--text);font-weight:500;padding:9px 10px}
+.lang-search{direction:inherit;text-align:start}
+@media (max-width:480px){body{padding:64px 12px 16px;place-items:start center;overflow-y:auto}.card{padding:32px 18px;border-radius:20px}h1{font-size:22px}.ic,.spin{width:68px;height:68px}.ic svg{width:32px;height:32px}.steps li{min-width:52px;font-size:11px}p{font-size:14px}}

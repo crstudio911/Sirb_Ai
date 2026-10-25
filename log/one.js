@@ -2,8 +2,8 @@
   'use strict';
 
   const api = window.SirbApi.api;
-  const RE_NAME = /^[\p{L}\p{N} _.\-]{2,50}$/u;
-  const RE_EMAIL = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/;
+  const RE_NAME = /^[\p{L}\p{N}][\p{L}\p{N} _.\-]{1,49}$/u;
+  const RE_EMAIL = /^[a-z0-9][a-z0-9._%+\-]*@[a-z0-9.\-]+\.[a-z]{2,}$/;
   const RE_CODE = /^\d{6}$/;
   const ALLOWED_DOMAINS = ['gmail.com','outlook.com','hotmail.com','yahoo.com','icloud.com','live.com','msn.com','proton.me','protonmail.com','zoho.com','gmx.com','mail.com','yandex.com','fastmail.com','tuta.com','tutanota.com','aol.com','hey.com'];
   const allowedEmail = e => RE_EMAIL.test(e) && ALLOWED_DOMAINS.includes(e.split('@')[1]);
@@ -11,7 +11,7 @@
 
   const ERRORS = {
     bad_credentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
-    locked: 'محاولات كثيرة، حاول مرة أخرى بعد 15 دقيقة',
+    locked: 'تم إيقاف المحاولة مؤقتاً بسبب إدخال كلمة مرور خاطئة أكثر من مرة',
     rate_limited: 'محاولات كثيرة، حاول لاحقاً',
     email_taken: 'هذا البريد مسجل بالفعل',
     email_invalid: 'البريد الإلكتروني غير صالح',
@@ -170,12 +170,32 @@
           location.replace('../main/main.html');
           return;
         }
-        setMsg(form, ERRORS[r.data && r.data.error] || ERRORS.default, 'error');
+        const d = r.data || {};
+        if (d.error === 'locked') { penalty(form, d); return; }
+        const extra = d.error === 'bad_credentials' && d.left === 1 ? '. تبقّت لك محاولة واحدة قبل الانتظار' : '';
+        setMsg(form, (ERRORS[d.error] || ERRORS.default) + extra, 'error');
       } catch (err) {
         setMsg(form, err && err.message === 'config' ? ERRORS.config : ERRORS.network, 'error');
       }
       lock(form, false);
     });
+    const saved = Number((function () { try { return localStorage.getItem('sirb-login-until'); } catch (e) { return 0; } })() || 0);
+    if (saved > Date.now()) penalty(form, { wait: Math.ceil((saved - Date.now()) / 1000) });
+  }
+
+  // 6.28.0: punishment. Wrong password more than once -> wait; repeated -> longer; severe -> security page.
+  function penalty(form, d) {
+    const wait = Math.max(5, Math.floor(Number(d.wait) || 300));
+    try { localStorage.setItem('sirb-login-until', String(Date.now() + wait * 1000)); } catch (e) {}
+    if (d.severe && window.SirbGuard && window.SirbGuard.punish) { window.SirbGuard.punish('login', wait); return; }
+    lock(form, true);
+    const fmt = s => { const m = Math.floor(s / 60), x = s % 60; return m ? m + ':' + String(x).padStart(2, '0') : x + ' ث'; };
+    const t = setInterval(function () {
+      const left = Math.ceil((Number(localStorage.getItem('sirb-login-until')) - Date.now()) / 1000);
+      if (left <= 0) { clearInterval(t); try { localStorage.removeItem('sirb-login-until'); } catch (e) {} lock(form, false); setMsg(form, 'يمكنك المحاولة الآن', 'info'); return; }
+      setMsg(form, ERRORS.locked + '. يمكنك المحاولة بعد ' + fmt(left), 'error');
+    }, 1000);
+    setMsg(form, ERRORS.locked + '. يمكنك المحاولة بعد ' + fmt(wait), 'error');
   }
 
   let resendLeft = 0;
@@ -204,7 +224,7 @@
       try {
         const r = await api('/send-code', { email, name: RE_NAME.test(name) ? name : '' });
         if (r.data.ok) {
-          setMsg(form, 'تم إرسال كود التحقق إلى بريدك (راجع الرسائل غير المرغوبة أيضاً)', 'success');
+          setMsg(form, 'تم الإرسال. لو البريد غير مسجّل هيوصلك كود التحقق (راجع الرسائل غير المرغوبة أيضاً)', 'success');
           codeIn.focus();
           countdown(60);
           return;

@@ -8,7 +8,8 @@
   const ERR = {
     unauthorized: 'انتهت الجلسة، سجل الدخول مرة أخرى',
     prompt_short: 'اكتب وصفاً أطول قليلاً',
-    gen_rate: 'بلغت الحد الأقصى للصور في الدقيقة، انتظر قليلاً وحاول مرة أخرى',
+    gen_rate: 'مسموح بإنشاء صورة أو فيديو واحد كل دقيقة، انتظر قليلاً ثم حاول مرة أخرى',
+    rate_limited: 'محاولات كثيرة، حاول لاحقاً',
     no_credits: 'رصيدك من الكريديت غير كافٍ لهذا الطلب',
     pro_required: 'وضع Pro متاح لمشتركي خطة Pro فقط',
     refs_limit: 'عدد الصور المرجعية يتجاوز الحد المسموح أو الصورة غير مدعومة',
@@ -506,6 +507,16 @@
     function renderRefs() {
       const row = $('refs');
       row.querySelectorAll('.ref').forEach(n => n.remove());
+      let nm = $('refNames');
+      if (!nm) { nm = el('div', 'ref-names'); nm.id = 'refNames'; row.parentNode.insertBefore(nm, row.nextSibling); }
+      nm.textContent = '';
+      refs.forEach((r, k) => {
+        const line = el('label', 'ref-name');
+        const inp = el('input'); inp.type = 'text'; inp.maxLength = 24; inp.value = r.name || ''; inp.placeholder = 'سمِّ الصورة ' + (k + 1) + ' (مثلاً: الشخصية)'; inp.setAttribute('aria-label', 'اسم الصورة ' + (k + 1));
+        inp.addEventListener('input', () => { r.name = inp.value.replace(/["“”<>{}\\]/g, '').slice(0, 24); });
+        line.append(el('b', '', String(k + 1)), inp);
+        nm.append(line);
+      });
       refs.forEach((r, k) => {
         const box = el('div', 'ref rise');
         const im = el('img'); im.src = r.thumb; im.alt = 'صورة مرجعية ' + (k + 1);
@@ -515,7 +526,7 @@
         row.insertBefore(box, $('refAdd'));
       });
       $('refAdd').classList.toggle('full', refs.length >= maxRefs());
-      $('refsHint').textContent = refs.length + ' / ' + maxRefs() + (refs.length ? (refs.length > 1 ? ' · اكتب مثلاً: ضع الشخص من صورة 1 في مكان صورة 2' : ' · اكتب التعديل المطلوب أو "مثل هذه الصورة"') : '');
+      $('refsHint').textContent = refs.length + ' / ' + maxRefs() + (refs.length ? (refs.length > 1 ? ' · سمِّ كل صورة، ثم اكتب مثلاً: غيّر ملابس الشخصية وخلّي الخلفية زي ما هي' : ' · اكتب التعديل المطلوب أو "مثل هذه الصورة"') : '');
       updateCost();
     }
 
@@ -860,7 +871,7 @@
     $('tplChipX').addEventListener('click', () => { clearTpl(); refs = []; renderRefs(); });
     renderTplGrid();
 
-    let busy = false;
+    let busy = false, waitSec = 0;
     $('genForm').addEventListener('submit', async e => {
       e.preventDefault();
       if (busy) return;
@@ -902,12 +913,13 @@
         }
         const sentRefs = refs.map(r => r.data);
         const thumbs = refs.map(r => r.thumb);
-        const r = await api('/generate', { prompt: text, extra: style, mode, refs: sentRefs, history, tpl: tplActive ? 1 : 0, tplRef: tplActive ? tplActive.tplRef : 0 });
+        const r = await api('/generate', { prompt: text, extra: style, mode, refs: sentRefs, refNames: refs.map(x => x.name || ''), history, tpl: tplActive ? 1 : 0, tplRef: tplActive ? tplActive.tplRef : 0 });
         if (r.status === 401) { location.replace('../log/one.html'); return; }
         if (!r.data || !r.data.ok || typeof r.data.image !== 'string' || !r.data.image.startsWith('data:image/')) {
           if (r.data && r.data.error) LOG('/generate ' + r.data.error);
           if (r.data && typeof r.data.total === 'number') setTotal(r.data.total);
           if (r.data && r.data.wallet) { user.wallet = r.data.wallet; usage(); }
+          waitSec = r.data && typeof r.data.wait === 'number' ? r.data.wait : 0;
           throw new Error(r.status === 413 ? 'size' : (r.data && r.data.error) || 'ai_failed');
         }
         let id = chatId;
@@ -924,7 +936,7 @@
       } catch (err) {
         const k = err && err.name === 'AbortError' ? 'ai_failed' : err && err.message;
         if (!ERR[k]) LOG('generate failed', err);
-        SirbUI.msg(msg, (ERR[k] || 'تعذر الاتصال، تحقق من اتصال الإنترنت وحاول مرة أخرى') + (k === 'ai_failed' || k === 'ai_quota' || k === 'fal_config' || k === 'ai_config' ? '. أُعيد الكريديت إليك' : ''), 'error');
+        SirbUI.msg(msg, (ERR[k] || 'تعذر الاتصال، تحقق من اتصال الإنترنت وحاول مرة أخرى') + (k === 'gen_rate' && waitSec > 0 ? ' (بعد ' + waitSec + ' ثانية)' : '') + (k === 'ai_failed' || k === 'ai_quota' || k === 'fal_config' || k === 'ai_config' ? '. أُعيد الكريديت إليك' : ''), 'error');
       } finally {
         busy = false;
         stages(false); $('genBtn').disabled = false; $('loading').hidden = true;

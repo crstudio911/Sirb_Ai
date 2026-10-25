@@ -376,3 +376,11 @@ img.flag.big { width: 120px; height: 80px; }
 .cost.tpl-cost .ic { width: 22px; height: 22px; }
 .cost.tpl-cost strong { font-size: 1.4rem; }
 .cost.tpl-cost .cost-note { flex-basis: 100%; }
+
+/* 6.28.0: names for reference images */
+.ref-names { display: grid; gap: 6px; margin-top: 8px; }
+.ref-names:empty { display: none; }
+.ref-name { display: flex; align-items: center; gap: 8px; }
+.ref-name b { min-width: 22px; height: 22px; border-radius: 7px; background: var(--primary); color: var(--on-primary); font: 700 .75rem var(--font-en); display: grid; place-items: center; flex: none; }
+.ref-name input { flex: 1; min-width: 0; height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--input); color: var(--text); font: 500 .85rem inherit; font-family: inherit; outline: none; }
+.ref-name input:focus { border-color: var(--primary); }
