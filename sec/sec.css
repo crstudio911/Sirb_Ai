@@ -65,7 +65,7 @@ input[type=month],input[type=date]{color-scheme:dark}
 .lang-list button[aria-checked="true"] { background: var(--glow); color: var(--primary); }
 .lang-tag { font: 600 11px 'Outfit', sans-serif; color: var(--muted); }
 @media (max-width: 560px) { .lang-btn { padding: 0 10px; } }
-/* إخفاء شريط وأدوات Google Translate */
+
 .gt-hidden, .goog-te-banner-frame, iframe.skiptranslate, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-spinner-pos, .VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
 body { top: 0 !important; }
 font[style] { background: none !important; box-shadow: none !important; }

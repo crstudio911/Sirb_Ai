@@ -279,7 +279,7 @@ svg { flex-shrink: 0; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
-/* رسائل النجاح والخطأ */
+
 .msg { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .note-mark { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; }
 .note-ic { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -298,7 +298,7 @@ svg { flex-shrink: 0; }
 .note-x { background: none; border: 0; color: var(--muted, var(--text)); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; }
 @media (prefers-reduced-motion: reduce) { .note { transition: none; } }
 
-/* ===== اختيار اللغة (6.7.0) ===== */
+
 .lang-pick { position: relative; display: inline-flex; }
 .lang-pick.floating { position: fixed; top: 14px; inset-inline-start: 14px; z-index: 60; }
 .lang-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: 600 13px/1 'Outfit', 'Cairo', sans-serif; cursor: pointer; backdrop-filter: blur(10px); transition: border-color .2s, box-shadow .2s, transform .2s; }
@@ -317,20 +317,20 @@ svg { flex-shrink: 0; }
 .lang-list button[aria-checked="true"] { background: var(--glow); color: var(--primary); }
 .lang-tag { font: 600 11px 'Outfit', sans-serif; color: var(--muted); }
 @media (max-width: 560px) { .lang-btn { padding: 0 10px; } }
-/* إخفاء شريط وأدوات Google Translate */
+
 .gt-hidden, .goog-te-banner-frame, iframe.skiptranslate, .goog-te-balloon-frame, #goog-gt-tt, .goog-te-spinner-pos, .VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
 body { top: 0 !important; }
 font[style] { background: none !important; box-shadow: none !important; }
 .goog-text-highlight { background: none !important; box-shadow: none !important; }
 
-/* 6.9.0: no zoom on phones — fixed scale, no double-tap zoom, no auto-zoom on input focus */
+
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
 @media (max-width: 820px) { input, select, textarea { font-size: 16px !important; } }
 .notes { z-index: 1000; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
 .note > span:nth-child(2) { overflow-wrap: anywhere; }
 .msg:empty { display: none; }
 
-/* ===== مؤثرات 6.21.0: خانات كود التحقق + كرة التفكير ===== */
+
 .otp { position: relative; flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .otp-box { height: 46px; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--line); background: var(--input); font-family: var(--font-en, 'Outfit', sans-serif); font-weight: 700; font-size: 1.15rem; color: var(--text, inherit); transition: border-color .2s, box-shadow .2s, transform .2s; position: relative; }
 .otp-box.filled { border-color: var(--primary); }
@@ -347,7 +347,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: man
 .loading-bar.has-orb .load-text { position: relative; z-index: 1; background: linear-gradient(90deg, var(--primary) 0%, var(--primary) 40%, var(--text, #fff) 50%, var(--primary) 60%, var(--primary) 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: fx-shimmer 2.2s linear infinite; }
 .loading-bar.has-orb .load-steps, .loading-bar.has-orb .load-track { flex-basis: 100%; }
 @keyframes fx-shimmer { from { background-position: 150% 0; } to { background-position: -100% 0; } }
-/* أيقونات حية: حركة خفيفة عند المرور */
+
 .btn .ic, .icon-btn .ic, .pill .ic, nav a .ic { transition: transform .25s cubic-bezier(.34,1.4,.64,1); }
 .btn:hover .ic, .icon-btn:hover .ic, .pill:hover .ic, nav a:hover .ic { transform: translateY(-2px) rotate(-8deg) scale(1.08); }
 @media (prefers-reduced-motion: reduce) { .otp-box, .otp-box.pop, .loading-bar.has-orb .load-text, .btn .ic, .icon-btn .ic { animation: none !important; transition: none !important; } .loading-bar.has-orb .load-text { color: var(--primary); background: none; } }

@@ -91,7 +91,7 @@
   .reveal { opacity: 1; transform: none; }
 }
 
-/* ===== الصفحة التعريفية 6.8.0 ===== */
+
 body { overflow-x: hidden; }
 .hero-home { min-height: auto; padding-top: 56px; padding-bottom: 64px; }
 .hero-stats { list-style: none; display: flex; flex-wrap: wrap; gap: 26px; margin-top: 34px; padding: 0; }
